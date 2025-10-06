@@ -1,0 +1,332 @@
+Here are all the key concepts and technologies I used in the code, organized by category:
+
+🎨 CSS & Styling Concepts
+1. CSS Custom Properties (CSS Variables)
+css
+:root {
+  --primary-color: #604D3C;
+  --secondary-color: #9DACB2;
+  --transition: all 0.3s ease;
+}
+Purpose: Centralized styling management
+
+Learn: CSS Custom Properties, CSS Variables
+
+Search: "CSS variables tutorial", "CSS custom properties"
+
+2. CSS Grid Layout
+css
+.DetailsGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 2.5rem;
+}
+Purpose: Complex layout management
+
+Learn: CSS Grid, grid-template-columns, fr units
+
+Search: "CSS Grid tutorial", "CSS Grid vs Flexbox"
+
+3. CSS Flexbox
+css
+.PropertyHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+Purpose: One-dimensional layouts and alignment
+
+Learn: Flexbox, justify-content, align-items
+
+Search: "CSS Flexbox complete guide", "Flexbox vs Grid"
+
+4. CSS Transitions & Animations
+css
+.IconButton {
+  transition: var(--transition);
+}
+.IconButton:hover {
+  transform: scale(1.1);
+}
+Purpose: Smooth interactive effects
+
+Learn: CSS transitions, transform property, hover states
+
+Search: "CSS transitions tutorial", "CSS hover effects"
+
+5. CSS Gradients
+css
+background: linear-gradient(135deg, #604D3C 0%, #8a7f6d 100%);
+Purpose: Modern background effects
+
+Learn: Linear gradients, radial gradients
+
+Search: "CSS gradients tutorial", "CSS background gradients"
+
+6. Responsive Design
+css
+@media (max-width: 768px) {
+  .DetailsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+Purpose: Mobile-friendly layouts
+
+Learn: Media queries, responsive breakpoints
+
+Search: "CSS media queries", "responsive web design"
+
+7. CSS Pseudo-elements
+css
+.DetailsGrid h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 3px;
+}
+Purpose: Decorative elements without extra HTML
+
+Learn: ::before, ::after pseudo-elements
+
+Search: "CSS pseudo-elements tutorial", "CSS before after"
+
+8. Box Shadow & Depth
+css
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+Purpose: Creating depth and visual hierarchy
+
+Learn: Box-shadow property, CSS shadows
+
+Search: "CSS box-shadow tutorial", "CSS depth effects"
+
+⚛️ React Concepts
+9. React Hooks
+jsx
+const [selectedImage, setSelectedImage] = useState(0);
+const [showBookingForm, setShowBookingForm] = useState(false);
+Purpose: State management in functional components
+
+Learn: useState, useEffect, custom hooks
+
+Search: "React Hooks tutorial", "useState useEffect"
+
+10. React Router
+jsx
+import { useParams } from 'react-router-dom';
+const { id } = useParams();
+Purpose: Client-side routing
+
+Learn: React Router, useParams, useNavigate
+
+Search: "React Router tutorial", "React routing"
+
+11. Context API
+jsx
+const { isFavorite, toggleFavorite } = useApp();
+Purpose: Global state management
+
+Learn: React Context, useContext, custom providers
+
+Search: "React Context API tutorial", "React global state"
+
+12. Event Handling
+jsx
+const handleFavorite = () => {
+  toggleFavorite({ id: property.documentId });
+};
+Purpose: User interaction handling
+
+Learn: Event handlers, synthetic events
+
+Search: "React event handling", "React onClick"
+
+13. Conditional Rendering
+jsx
+{showBookingForm && (
+  <div className={style.ModalOverlay}>
+    {/* Modal content */}
+  </div>
+)}
+Purpose: Dynamic UI rendering
+
+Learn: Conditional rendering, logical operators
+
+Search: "React conditional rendering", "React && operator"
+
+🔗 GraphQL & API Concepts
+14. GraphQL Queries
+jsx
+export const GET_PROPERTY_DETAILS = gql`
+  query GetPropertyDetails($documentId: ID!) {
+    accommodation(documentId: $documentId) {
+      documentId
+      name
+      location {
+        Address
+        City
+      }
+    }
+  }
+`;
+Purpose: Data fetching with specific fields
+
+Learn: GraphQL queries, variables, schema
+
+Search: "GraphQL queries tutorial", "Apollo Client"
+
+15. Apollo Client
+jsx
+import { useQuery } from '@apollo/client/react';
+const { loading, error, data } = useQuery(GET_PROPERTY_DETAILS);
+Purpose: GraphQL client for React
+
+Learn: useQuery hook, loading states, error handling
+
+Search: "Apollo Client React", "useQuery hook"
+
+🎯 JavaScript Concepts
+16. Array Methods
+jsx
+allImages.map((image, index) => (
+  <div key={index}>
+    <img src={getImageUrl(image.url)} />
+  </div>
+))
+Purpose: Data transformation and rendering
+
+Learn: map, filter, reduce array methods
+
+Search: "JavaScript array methods", "map filter reduce"
+
+17. Object Destructuring
+jsx
+const { documentId, details, location, media } = accommodation;
+Purpose: Cleaner object property access
+
+Learn: Object destructuring, array destructuring
+
+Search: "JavaScript destructuring", "ES6 destructuring"
+
+18. Template Literals
+jsx
+const imgUrl = imagePath ? `http://localhost:1337${imagePath.url}` : "/placeholder.jpg";
+Purpose: String interpolation and dynamic strings
+
+Learn: Template literals, string interpolation
+
+Search: "JavaScript template literals", "ES6 template strings"
+
+19. Arrow Functions
+jsx
+const getImageUrl = (url) => (url ? `${API_BASE_URL}${url}` : '');
+Purpose: Concise function syntax
+
+Learn: Arrow functions, implicit return
+
+Search: "JavaScript arrow functions", "ES6 functions"
+
+🛠 Development Concepts
+20. Component Architecture
+jsx
+export default function SingleProperty() {
+  return (
+    <div className={style.SinglePropertyBody}>
+      {/* Component structure */}
+    </div>
+  );
+}
+Purpose: Reusable, maintainable code organization
+
+Learn: React components, props, composition
+
+Search: "React component architecture", "React best practices"
+
+21. State Management
+jsx
+const [bookingData, setBookingData] = useState({
+  name: '', email: '', phone: '', date: '', message: ''
+});
+Purpose: Managing form state and user input
+
+Learn: State management, form handling
+
+Search: "React state management", "React forms"
+
+22. Error Handling
+jsx
+if (loading) return <div className={style.loading}>Loading...</div>;
+if (error) return <div className={style.error}>Error: {error.message}</div>;
+Purpose: Graceful error and loading states
+
+Learn: Error boundaries, loading states
+
+Search: "React error handling", "React loading states"
+
+23. Accessibility (a11y)
+jsx
+<button 
+  aria-label={isFavorite(property.documentId) ? 'Remove from favorites' : 'Add to favorites'}
+>
+  {isFavorite(property.documentId) ? <FaHeart color="red" /> : <FaRegHeart />}
+</button>
+Purpose: Making apps usable for everyone
+
+Learn: ARIA attributes, semantic HTML, keyboard navigation
+
+Search: "React accessibility", "ARIA attributes", "a11y"
+
+📚 Recommended Learning Path
+Beginner Level:
+HTML & CSS Fundamentals
+
+JavaScript Basics (ES6+)
+
+React Fundamentals
+
+Intermediate Level:
+CSS Grid & Flexbox
+
+React Hooks & State Management
+
+Responsive Design
+
+GraphQL Basics
+
+Advanced Level:
+Advanced CSS (Animations, Transforms)
+
+React Performance Optimization
+
+Advanced GraphQL
+
+Accessibility
+
+🎥 YouTube Channels to Follow:
+Traversy Media - Web development fundamentals
+
+The Net Ninja - React & modern JavaScript
+
+Kevin Powell - CSS mastery
+
+FreeCodeCamp - Comprehensive tutorials
+
+Academind - Advanced React concepts
+
+Web Dev Simplified - Clear, practical tutorials
+
+🔍 Specific Search Terms:
+"React modern practices 2024"
+
+"CSS Grid real world examples"
+
+"React GraphQL Apollo tutorial"
+
+"CSS variables practical usage"
+
+"React responsive design techniques"
+
+"Accessible React components"
+
+This covers all the major concepts used in the code. Start with the fundamentals and gradually move to more advanced topics as you build your understanding!

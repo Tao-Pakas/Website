@@ -1,0 +1,265 @@
+/* ===== ROOT VARIABLES FOR CONSISTENCY ===== */
+:root {
+  --button-color: #9dacb2;
+  --button-text-color: #000;
+  --heading-color: #f2f0ed;
+  --sub-heading-color: #d9cebf;
+  --label-text-color: #1e1e1e;
+  --border-radius: 15px;
+  --transition: all 0.3s ease;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --input-border: 1px solid #ccc;
+}
+
+/* ===== CONTAINER OPTIMIZATION ===== */
+.FormsContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 40px;
+  justify-content: center;
+  align-items: stretch; /* Changed to stretch for equal height */
+  flex-wrap: wrap;
+  margin: 40px auto; /* Increased margin */
+  padding: 20px;
+  width: 100%;
+  max-width: 1200px;
+  min-height: 80vh; /* Better vertical centering */
+}
+
+.SignUPp{
+  overflow-x: hidden;
+}
+
+/* ===== COMMON FORM STYLES ===== */
+.LoginForm,
+.SignUpForm,
+.ForgotPassword {
+  background-color: var(--sub-heading-color);
+  display: flex;
+  flex-direction: column;
+  gap: 25px; /* Increased gap */
+  border-radius: var(--border-radius);
+  padding: 2.5rem; /* Using rem for better scaling */
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+  min-height: 400px; /* Minimum height for consistency */
+}
+
+.LoginForm:hover,
+.SignUpForm:hover,
+.ForgotPassword:hover {
+  transform: translateY(-5px); /* More noticeable hover */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+}
+
+/* ===== INDIVIDUAL FORM SIZES ===== */
+.LoginForm {
+  width: min(400px, 90vw); /* Better responsive control */
+  min-height: 450px;
+}
+
+.SignUpForm {
+  width: min(400px, 90vw);
+  min-height: 500px;
+}
+
+.ForgotPassword {
+  width: min(400px, 90vw);
+  min-height: 380px;
+}
+
+/* ===== TYPOGRAPHY ENHANCEMENTS ===== */
+.LoginForm h1,
+.SignUpForm h1,
+.ForgotPassword h1 {
+  font-size: clamp(1.8rem, 3vw, 2.2rem); /* Responsive font size */
+  font-weight: 600;
+  text-align: center;
+  color: var(--heading-color);
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+/* ===== INPUT FIELD ENHANCEMENTS ===== */
+.LoginFormInputFields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Consistent spacing */
+  flex: 1; /* Take available space */
+}
+
+.Feild1 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.Feild1 label {
+  color: var(--label-text-color);
+  font-size: 0.95rem;
+  font-weight: 500; /* Slightly bolder */
+  margin-bottom: 0.25rem;
+}
+
+.LoginFormInputFields input {
+  width: 92%;
+  height: 38px; /* Better touch target */
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: var(--input-border);
+  color: #000;
+  font-size: 1rem;
+  transition: var(--transition);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.LoginFormInputFields input:focus {
+  outline: none;
+  border-color: var(--background-color);
+  box-shadow: 0 0 0 3px rgba(96, 77, 60, 0.1); /* Subtle focus glow */
+  transform: translateY(-1px);
+}
+
+/* ===== BUTTON ENHANCEMENTS ===== */
+.Submit {
+  height: 48px;
+  width: 100%;
+  color: var(--button-text-color);
+  background-color: var(--button-color);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: auto; /* Push to bottom */
+}
+
+.Submit:hover {
+  background-color: var(--background-color);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(96, 77, 60, 0.3);
+  transform: translateY(-2px);
+}
+
+.Submit:active {
+  transform: translateY(0);
+}
+
+/* ===== LINK & HELPER TEXT ENHANCEMENTS ===== */
+.LoginFormInputFields h3,
+.LoginForm h3,
+.SignUP {
+  text-align: center;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  transition: var(--transition);
+  color: var(--background-color);
+  font-weight: 500;
+}
+
+.LoginFormInputFields h3:hover,
+.LoginForm h3:hover,
+.SignUP:hover {
+  color: var(--label-text-color);
+  transform: translateY(-1px);
+}
+
+/* ===== TEXT STYLES ===== */
+.LoginFormHeading p,
+.SignUpForm p,
+.ForgotPassword p {
+  color: hsl(0, 0%, 25%);
+  font-size: 0.95rem;
+  text-align: center;
+  line-height: 1.5;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+/* ===== LAYOUT ENHANCEMENTS ===== */
+.CenterScreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
+  padding: 20px;
+}
+
+/* ===== RESPONSIVE DESIGN ENHANCEMENTS ===== */
+@media (max-width: 1024px) {
+  .FormsContainer {
+    gap: 30px;
+    margin: 30px auto;
+  }
+  
+  .LoginForm,
+  .SignUpForm,
+  .ForgotPassword {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .FormsContainer {
+    flex-direction: column;
+    gap: 25px;
+    margin: 20px auto;
+    padding: 15px;
+  }
+
+  .LoginForm,
+  .SignUpForm,
+  .ForgotPassword {
+    width: 100%;
+    max-width: 400px;
+    min-height: auto;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .FormsContainer {
+    gap: 20px;
+    margin: 15px auto;
+    padding: 10px;
+  }
+
+  .LoginForm,
+  .SignUpForm,
+  .ForgotPassword {
+    padding: 1.25rem;
+  }
+
+  .LoginFormInputFields input {
+    height: 44px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .Submit {
+    height: 44px;
+  }
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+@media (prefers-reduced-motion: reduce) {
+  .LoginForm,
+  .SignUpForm,
+  .ForgotPassword,
+  .LoginFormInputFields input,
+  .Submit,
+  .LoginFormInputFields h3,
+  .LoginForm h3,
+  .SignUP {
+    transition: none;
+  }
+}
+
+/* Focus indicators for accessibility */
+.Submit:focus-visible,
+.LoginFormInputFields input:focus-visible {
+  outline: 2px solid var(--background-color);
+  outline-offset: 2px;
+}

@@ -1,0 +1,726 @@
+.Dashboard {
+  max-width: 1400px;
+  margin: 4% auto;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+/* Header */
+.dashboardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.headerContent h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.headerContent p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.headerActions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.primaryButton {
+  background: #604D3C;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.3s ease;
+}
+
+.primaryButton:hover {
+  background: #4a392e;
+}
+
+.iconButton {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #666;
+}
+
+.iconButton:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+/* Tab Navigation */
+.tabNavigation {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e9ecef;
+  overflow-x: auto;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #666;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: #333;
+  background: #f8f9fa;
+}
+
+.activeTab {
+  color: #604D3C;
+  border-bottom-color: #604D3C;
+  background: #f8f9fa;
+}
+
+/* Overview Grid */
+.overviewGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 1.5rem;
+  grid-template-areas: 
+    "stats stats"
+    "activity listings"
+    "actions listings";
+}
+
+.statsGrid {
+  grid-area: stats;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.statCard {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+}
+
+.statIcon {
+  font-size: 2rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.statInfo h3 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.statInfo p {
+  color: #666;
+  margin: 0;
+}
+
+.statChange {
+  margin-left: auto;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.statChange.up {
+  background: #d4edda;
+  color: #155724;
+}
+
+.statChange.down {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Activity Card */
+.activityCard {
+  grid-area: activity;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.activityCard h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activityItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  transition: background 0.3s ease;
+}
+
+.activityItem:hover {
+  background: #f8f9fa;
+}
+
+.activityIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.activityDetails p {
+  margin: 0;
+  color: #333;
+}
+
+.activityTime {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* Listings Preview */
+.listingsPreview {
+  grid-area: listings;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sectionHeader h2 {
+  color: #333;
+  margin: 0;
+}
+
+.viewAllLink {
+  color: #604D3C;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.viewAllLink:hover {
+  text-decoration: underline;
+}
+
+.listingsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.listingCard {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.listingCard:hover {
+  border-color: #604D3C;
+  box-shadow: 0 2px 8px rgba(96, 77, 60, 0.1);
+}
+
+.listingImage {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.listingImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.statusBadge {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  background: #27ae60;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.listingInfo {
+  flex: 1;
+}
+
+.listingInfo h3 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.listingPrice {
+  font-weight: 700;
+  color: #604D3C;
+  margin-bottom: 0.5rem;
+}
+
+.listingStats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* Quick Actions */
+.quickActions {
+  grid-area: actions;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.quickActions h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.actionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.actionCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #333;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.actionCard:hover {
+  background: #604D3C;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.actionCard svg {
+  font-size: 1.5rem;
+}
+
+/* Listings Tab */
+.listingsTab {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.tabHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.tabHeader h2 {
+  margin: 0;
+  color: #333;
+}
+
+/* Listings Table */
+.listingsTable {
+  padding: 1.5rem;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #e9ecef;
+  align-items: center;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.propertyCell {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.propertyCell img {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.propertyInfo h4 {
+  margin: 0 0 0.25rem 0;
+  color: #333;
+}
+
+.propertyMeta {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.actionsCell {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.actionBtn:hover {
+  background: #f8f9fa;
+  color: #604D3C;
+}
+
+/* Saved Tab */
+.savedTab {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.savedStats {
+  display: flex;
+  gap: 2rem;
+}
+
+.savedStats span {
+  padding: 0.5rem 1rem;
+  background: #f8f9fa;
+  border-radius: 20px;
+  font-weight: 600;
+  color: #604D3C;
+}
+
+.savedGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.savedSection h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.propertiesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.propertyCard {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.propertyCard:hover {
+  border-color: #604D3C;
+  transform: translateY(-2px);
+}
+
+.propertyCard img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.propertyInfo {
+  padding: 1rem;
+}
+
+.propertyInfo h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.propertyInfo p {
+  margin: 0 0 0.5rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.propertyPrice {
+  font-weight: 700;
+  color: #604D3C;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+}
+
+.emptyState svg {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #ddd;
+}
+
+.browseLink {
+  display: inline-block;
+  margin-top: 1rem;
+  color: #604D3C;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.browseLink:hover {
+  text-decoration: underline;
+}
+
+/* Analytics Tab */
+.analyticsTab {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.analyticsPeriod select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.analyticsCard {
+  padding: 1.5rem;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+}
+
+.analyticsCard h3 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.performanceStats {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.performanceItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.performanceItem strong {
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.positive {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.negative {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.topListings {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.topListing {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+}
+
+.rank {
+  background: #604D3C;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.listingInfo {
+  flex: 1;
+}
+
+.listingInfo h4 {
+  margin: 0 0 0.25rem 0;
+  color: #333;
+}
+
+.listingInfo span {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.listingStats {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .overviewGrid {
+    grid-template-columns: 1fr;
+    grid-template-areas: 
+      "stats"
+      "activity"
+      "listings"
+      "actions";
+  }
+}
+
+@media (max-width: 768px) {
+  .Dashboard {
+    padding: 1rem;
+  }
+
+  .dashboardHeader {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .tabNavigation {
+    flex-wrap: wrap;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .tableHeader,
+  .tableRow {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .analyticsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .propertiesGrid {
+    grid-template-columns: 1fr;
+  }
+}

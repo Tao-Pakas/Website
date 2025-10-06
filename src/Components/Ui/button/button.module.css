@@ -1,0 +1,88 @@
+:root{
+    --button-color:#9DACB2;
+    --button-color-primary:#D9CEBF;
+    --button-font-color:#000;
+
+    --button-font-hover:#1e1e1e ;
+    --button-color-hover:#f3f3f3;
+
+    --font-size: 1.2rem;
+}
+
+.Button{
+    height: 40px;
+    width: 200px;
+    font-size: var(--font-size);
+    background-color: var(--button-color);
+    color: var(--button-font-color);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    transition: all 200ms ease-in-out;
+}
+
+.Button:hover,
+.Primary:hover{
+    font-size: 1.3rem;
+    text-shadow: 0px 0px 2px #000;
+    background-color: var(--button-color-hover);
+    color: var(--button-font-hover);
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.4);
+}
+
+.Primary{
+    height: 40px;
+    width: 120px;
+    font-size: var(--font-size);
+    background-color: var(--button-color-primary);
+    color: var(--button-font-color);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    transition: all 200ms ease-in-out;
+}
+
+/* Additional states for loading and disabled */
+.loading {
+    cursor: wait;
+    opacity: 0.8;
+    position: relative;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.disabled:hover {
+    font-size: var(--font-size) !important;
+    background-color: var(--button-color) !important;
+    color: var(--button-font-color) !important;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2) !important;
+    text-shadow: none !important;
+}
+
+.Primary.disabled:hover {
+    background-color: var(--button-color-primary) !important;
+}

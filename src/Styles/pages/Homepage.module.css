@@ -1,0 +1,826 @@
+:root {
+  --button-color: #9DACB2;
+  --heading-color: #F2F0ED;
+  --sub-heading-color: #D9CEBF;
+  --button-text-color: #000;
+  --shadows: hsla(0, 0%, 12%, 0.2);
+  --hero-background-color: #604D3C;
+  --background-color: #fafafa;
+  
+  /* New variables for consistency */
+  --border-radius-sm: 8px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+  --transition: all 0.3s ease;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 4rem;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.Body {
+  padding: var(--spacing-lg) var(--spacing-sm);
+  min-height: 100vh;
+  background-color: var(--background-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  padding: 2.8% 1%;
+}
+
+/* ===== SECTION HEADERS ===== */
+.WhyUsContainer, 
+.FeaturedMainContainer, 
+.AboutContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: 0 var(--spacing-sm);
+}
+
+.Body h3 {
+  color: hsla(0, 0%, 12%, 0.6);
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.Body h2 {
+  font-size: clamp(1.5rem, 5vw, 2.2rem);
+  color: #000;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* ===== WHY CHOOSE US SECTION ===== */
+.WhyChooseUsSection {
+  padding: clamp(2rem, 6vw, 4rem) clamp(1rem, 4vw, 2rem);
+  background: linear-gradient(135deg, #604D3C 0%, #9DACB2 100%);
+  color: white;
+  text-align: center;
+}
+
+.WhyChooseUsHeader {
+  margin-bottom: clamp(2rem, 5vw, 3rem);
+}
+
+.WhyChooseUsSubtitle {
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  color: #D9CEBF;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.WhyChooseUsTitle {
+  font-size: clamp(1.8rem, 6vw, 2.5rem);
+  margin-bottom: 1rem;
+  color: white;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.ReasonsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: clamp(1.5rem, 4vw, 2rem);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.ReasonCard {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 3vw, 2rem);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.ReasonCard:hover {
+  transform: translateY(-10px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.ReasonIcon {
+  width: clamp(60px, 15vw, 80px);
+  height: clamp(60px, 15vw, 80px);
+  margin: 0 auto clamp(1rem, 3vw, 1.5rem);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.WhyChooseUsIcon {
+  width: clamp(30px, 8vw, 40px);
+  height: clamp(30px, 8vw, 40px);
+  filter: brightness(0) invert(1);
+  transition: all 0.3s ease;
+}
+
+.ReasonCard:hover .WhyChooseUsIcon {
+  transform: scale(1.1);
+}
+
+.ReasonTitle {
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
+  margin-bottom: 1rem;
+  color: white;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.ReasonDescription {
+  font-size: clamp(0.9rem, 3vw, 1rem);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+/* ===== DISCOVER SECTION ===== */
+.Discover {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm);
+  justify-content: center;
+}
+
+.DiscoverContainerText, 
+.DiscoverContainerParagraph {
+  flex: 1;
+  min-width: min(100%, 500px);
+  height: auto;
+  min-height: 150px;
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.DiscoverContainerText{
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  color: hsla(0, 0%, 0%, 0.6);
+  text-align: center;
+}
+
+.DiscoverContainerParagraph{
+  font-size: clamp(1rem, 3vw, 1.1rem);
+  color: var(--button-text-color);
+  line-height: 1.6;
+}
+
+/* ===== FEATURED SECTION ===== */
+.FeaturedMainContainer {
+  padding: clamp(2rem, 6vw, 4rem) clamp(1rem, 4vw, 2rem);
+}
+
+.Featured {
+  padding: var(--spacing-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  justify-content: center;
+}
+
+.FeaturedContainer, 
+.FeaturedContainerRight {
+  flex: 1;
+  min-width: min(100%, 600px);
+  border-radius: var(--border-radius-sm);
+  background: white;
+  box-shadow: 0 4px 16px var(--shadows);
+}
+
+.FeaturedContainer {
+  height: min(600px, 60vh);
+  overflow: hidden;
+  position: relative;
+}
+
+.FeaturedContainerRight {
+  display: flex;
+  flex-direction: column;
+  height: min(600px, 60vh);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+}
+
+.FeaturedSubContainer {
+  height: 48%;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.FeaturedSubContainerRight {
+  display: flex;
+  gap: var(--spacing-sm);
+  height: 48%;
+}
+
+.FeaturedContainer1 {
+  flex: 1;
+  overflow: hidden;
+  border-radius: var(--border-radius-md);
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.FeaturedImages{
+  height: 100%;
+  width: 100%;
+  transition: 200ms ease-in-out all;
+  transform: scale(1);
+  cursor: pointer;
+  object-fit: cover;
+}
+
+.FeaturedImages:hover{
+  transform: scale(1.05);
+}
+
+/* ===== ABOUT SECTION ===== */
+.AboutContainer {
+  padding: clamp(2rem, 6vw, 4rem) clamp(1rem, 4vw, 2rem);
+}
+
+.AboutSubContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm);
+  justify-content: center;
+  align-items: center;
+}
+
+.AboutImageContainer, 
+.AboutUsInfoContainer {
+  flex: 1;
+  min-width: min(100%, 500px);
+  height: auto;
+  min-height: 350px;
+  border-radius: var(--border-radius-sm);
+  background: white;
+  box-shadow: 0 4px 16px var(--shadows);
+}
+
+.AboutImageContainer {
+  overflow: hidden;
+}
+
+.AboutImageContainer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: var(--transition);
+}
+
+.AboutUsInfoContainer{
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  color: var(--button-text-color);
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 3vw, 1.5rem);
+  padding: clamp(1rem, 4vw, 2rem);
+}
+
+/* ===== POPULAR PROPERTIES ===== */
+.PopularProperty {
+  padding: 1%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.PopularProperties {
+  gap: var(--spacing-md);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  color: #000;
+}
+
+.PropertyContainer {
+  height: auto;
+  min-height: 500px;
+  width: min(100%, 300px);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 2px 8px var(--shadows);
+  overflow: hidden;
+  background: white;
+  transition: var(--transition);
+}
+
+.PropertyContainer:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.ImageContainer {
+  height: 65%;
+  background-color: hsl(0, 0%, 50%,0.2);
+  overflow: hidden;
+  position: relative;
+}
+
+.Image {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, 
+    black 10%,
+    rgba(0, 0, 0, 0.6) 60%, 
+    rgba(0, 0, 0, 0.4) 80%, 
+    rgba(0, 0, 0, 0.02) 100%, 
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(to bottom, 
+    black 10%,
+    rgba(0, 0, 0, 0.6) 60%, 
+    rgba(0, 0, 0, 0.4) 80%, 
+    rgba(0, 0, 0, 0.02) 100%, 
+    transparent
+  );
+  cursor: pointer;
+  transition: var(--transition);
+  object-fit: cover;
+}
+
+.Image:hover {
+  mask-image: none;
+  -webkit-mask-image: none;
+  transform: scale(1.05);
+  object-position: center;
+}
+
+.Image:hover {
+  transform: scale(1.05);
+}
+
+/* Info */
+.InfoContainer {
+  padding: clamp(0.75rem, 2vw, 1rem);
+  display: flex;
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  flex-direction: column;
+  gap: clamp(0.5rem, 2vw, 0.75rem);
+}
+
+.InfoRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.Label {
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.Value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* Buttons */
+.submit {
+  width: 100%;
+  height: clamp(36px, 8vw, 44px);
+  color: var(--button-text-color);
+  background-color: var(--button-color);
+  border: none;
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  border-radius: var(--border-radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: auto;
+}
+
+.submit:hover {
+  background-color: var(--hero-background-color);
+  color: var(--heading-color);
+  box-shadow: 0 4px 12px var(--shadows);
+}
+
+.ctaButton {
+  padding: clamp(0.75rem, 3vw, 1rem) clamp(1.5rem, 4vw, 2.5rem);
+  background: var(--button-color);
+  color: var(--button-text-color);
+  border: none;
+  border-radius: 8px;
+  font-size: clamp(1rem, 3vw, 1.1rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  width: fit-content;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.ctaButton:hover {
+  background: var(--hero-background-color);
+  color: var(--heading-color);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.ViewAll{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 1rem;
+}
+
+.ViewAll h3{
+  cursor: pointer;
+  transform: translateY(0);
+  transition: 200ms ease-in-out all;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ViewAll h3:hover{
+  transform: translateY(-1.5px);
+  color: var(--button-text-color);
+}
+
+.link{
+  text-decoration: none;
+}
+
+.iconsContainer {
+  position: absolute;
+  top: clamp(8px, 2vw, 12px);
+  right: clamp(8px, 2vw, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 1.5vw, 8px);
+  z-index: 10;
+}
+
+/* Icon Buttons */
+.iconButton {
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 50%;
+  width: clamp(32px, 8vw, 40px);
+  height: clamp(32px, 8vw, 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.iconButton:hover {
+  background: white;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.iconButton.active {
+  background: #f8f9fa;
+  transform: scale(1.05);
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  top: clamp(16px, 4vw, 20px);
+  right: clamp(16px, 4vw, 20px);
+  background: #333;
+  color: white;
+  padding: clamp(10px, 3vw, 12px) clamp(16px, 4vw, 20px);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+  font-size: clamp(0.9rem, 3vw, 1rem);
+  max-width: min(90vw, 400px);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ===== ENHANCED RESPONSIVE DESIGN ===== */
+@media (max-width: 1200px) {
+  .Body {
+    gap: clamp(var(--spacing-lg), 5vw, var(--spacing-xl));
+  }
+}
+
+@media (max-width: 1024px) {
+  .Body {
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-xs);
+  }
+  
+  .ReasonsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+  }
+  
+  .Body {
+    gap: var(--spacing-lg);
+    padding: var(--spacing-sm) var(--spacing-xs);
+  }
+  
+  .Discover,
+  .Featured,
+  .AboutSubContainer,
+  .PopularProperties {
+    gap: var(--spacing-sm);
+  }
+  
+  .WhyChooseUsSection {
+    padding: 2rem 1rem;
+  }
+
+  .WhyChooseUsTitle {
+    font-size: 1.8rem;
+  }
+
+  .ReasonsGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .ReasonCard {
+    padding: 1.5rem 1rem;
+  }
+
+  .ReasonIcon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+  }
+
+  .WhyChooseUsIcon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .ReasonTitle {
+    font-size: 1.3rem;
+  }
+  
+  .FeaturedContainer,
+  .FeaturedContainerRight {
+    min-width: 100%;
+    height: auto;
+  }
+  
+  .FeaturedContainer {
+    height: 50vh;
+  }
+  
+  .FeaturedContainerRight {
+    height: auto;
+    min-height: 50vh;
+  }
+  
+  .AboutSubContainer {
+    flex-direction: column;
+  }
+  
+  .AboutImageContainer,
+  .AboutUsInfoContainer {
+    min-width: 100%;
+    height: auto;
+  }
+  
+  .ViewAll {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .ViewAll h2 {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .PropertyContainer {
+    width: min(100%, 300px);
+  }
+  
+  .ImageContainer {
+    height: 180px;
+  }
+  
+  .InfoContainer {
+    padding: 0.75rem;
+  }
+  
+  .InfoRow {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .Label, .Value {
+    text-align: left;
+  }
+  
+  .Value {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 480px) {
+  .Body {
+    padding: var(--spacing-sm) var(--spacing-xs);
+    gap: var(--spacing-md);
+  }
+  
+  .Body h2 {
+    font-size: clamp(1.3rem, 6vw, 1.6rem);
+  }
+  
+  .Body h3 {
+    font-size: clamp(0.9rem, 4vw, 1.1rem);
+  }
+  
+  .WhyChooseUsSection {
+    padding: 1.5rem 1rem;
+  }
+
+  .WhyChooseUsTitle {
+    font-size: 1.6rem;
+  }
+
+  .ReasonCard {
+    padding: 1.25rem 0.875rem;
+  }
+
+  .ReasonTitle {
+    font-size: 1.1rem;
+  }
+
+  .ReasonDescription {
+    font-size: 0.875rem;
+  }
+  
+  .PopularProperties {
+    gap: 1rem;
+  }
+  
+  .PropertyContainer {
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .iconsContainer {
+    top: 6px;
+    right: 6px;
+  }
+  
+  .iconButton {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .Body {
+    padding: 0.5rem;
+  }
+  
+  .WhyChooseUsSection,
+  .FeaturedMainContainer,
+  .AboutContainer,
+  .PopularProperty {
+    padding: 1rem 0.5rem;
+  }
+  
+  .ReasonCard {
+    padding: 1rem 0.75rem;
+  }
+  
+  .InfoContainer {
+    padding: 0.5rem;
+  }
+}
+
+/* ===== TOUCH DEVICE OPTIMIZATIONS ===== */
+@media (hover: none) and (pointer: coarse) {
+  .ReasonCard:hover {
+    transform: none;
+  }
+  
+  .FeaturedImages:hover,
+  .Image:hover {
+    transform: none;
+  }
+  
+  .iconButton:hover {
+    transform: none;
+  }
+  
+  .ctaButton:hover,
+  .submit:hover {
+    transform: none;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+  .ReasonCard,
+  .FeaturedContainer,
+  .FeaturedContainerRight,
+  .AboutImageContainer,
+  .AboutUsInfoContainer,
+  .PropertyContainer,
+  .iconButton,
+  .ctaButton,
+  .submit {
+    transition: none;
+  }
+  
+  .FeaturedImages:hover,
+  .Image:hover,
+  .ReasonCard:hover,
+  .iconButton:hover,
+  .ctaButton:hover,
+  .submit:hover {
+    transform: none;
+  }
+}
+
+/* Focus states for accessibility */
+.ctaButton:focus-visible,
+.submit:focus-visible,
+.iconButton:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .ReasonCard {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid white;
+  }
+  
+  .iconButton {
+    border: 1px solid #333;
+  }
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+.ReasonCard,
+.FeaturedContainer,
+.FeaturedSubContainer,
+.FeaturedContainer1,
+.AboutImageContainer,
+.AboutUsInfoContainer,
+.PropertyContainer {
+  will-change: transform, box-shadow;
+}
+
+/* Ensure images don't cause layout shifts */
+.Image,
+.FeaturedImages {
+  aspect-ratio: 16/9;
+}

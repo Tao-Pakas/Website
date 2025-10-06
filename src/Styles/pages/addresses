@@ -1,0 +1,744 @@
+[
+  {
+    "id": 1,
+    "address": "123 University Street, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3519,
+    "longitude": 30.1937
+  },
+  {
+    "id": 2,
+    "address": "456 Student Village, Chinhoyi University Campus",
+    "city": "Chinhoyi",
+    "latitude": -17.3530,
+    "longitude": 30.1950
+  },
+  {
+    "id": 3,
+    "address": "789 Manyame Road, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3490,
+    "longitude": 30.1910
+  },
+  {
+    "id": 4,
+    "address": "321 Lomagundi Road, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3550,
+    "longitude": 30.1970
+  },
+  {
+    "id": 5,
+    "address": "654 Chirundu Road, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3480,
+    "longitude": 30.1990
+  },
+  {
+    "id": 6,
+    "address": "987 Karoi Street, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3570,
+    "longitude": 30.2010
+  },
+  {
+    "id": 7,
+    "address": "147 Chinhoyi Heights, Off University Road",
+    "city": "Chinhoyi",
+    "latitude": -17.3520,
+    "longitude": 30.1880
+  },
+  {
+    "id": 8,
+    "address": "258 Campus View Apartments, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3540,
+    "longitude": 30.1900
+  },
+  {
+    "id": 9,
+    "address": "369 Student Lodge, Manyame Crescent",
+    "city": "Chinhoyi",
+    "latitude": -17.3500,
+    "longitude": 30.1920
+  },
+  {
+    "id": 10,
+    "address": "741 Academic Square, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3560,
+    "longitude": 30.1940
+  },
+  {
+    "id": 11,
+    "address": "852 University Gardens, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3510,
+    "longitude": 30.1960
+  },
+  {
+    "id": 12,
+    "address": "963 Student Hub, Lomagundi Road",
+    "city": "Chinhoyi",
+    "latitude": -17.3535,
+    "longitude": 30.1985
+  },
+  {
+    "id": 13,
+    "address": "159 Campus Residence, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3495,
+    "longitude": 30.2005
+  },
+  {
+    "id": 14,
+    "address": "357 Manyame Flats, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3555,
+    "longitude": 30.1895
+  },
+  {
+    "id": 15,
+    "address": "753 University Terrace, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3525,
+    "longitude": 30.1915
+  },
+  {
+    "id": 16,
+    "address": "246 Student Palace, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3545,
+    "longitude": 30.1935
+  },
+  {
+    "id": 17,
+    "address": "864 Academic Lodge, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3505,
+    "longitude": 30.1955
+  },
+  {
+    "id": 18,
+    "address": "975 Campus Comfort, Manyame Road",
+    "city": "Chinhoyi",
+    "latitude": -17.3565,
+    "longitude": 30.1975
+  },
+  {
+    "id": 19,
+    "address": "135 Student Haven, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3515,
+    "longitude": 30.1995
+  },
+  {
+    "id": 20,
+    "address": "246 University Plaza, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3538,
+    "longitude": 30.1885
+  },
+  {
+    "id": 21,
+    "address": "357 Manyame Court, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3498,
+    "longitude": 30.1905
+  },
+  {
+    "id": 22,
+    "address": "468 Student Square, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3558,
+    "longitude": 30.1925
+  },
+  {
+    "id": 23,
+    "address": "579 Campus Towers, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3528,
+    "longitude": 30.1945
+  },
+  {
+    "id": 24,
+    "address": "680 Academic Heights, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3548,
+    "longitude": 30.1965
+  },
+  {
+    "id": 25,
+    "address": "791 Student Gardens, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3508,
+    "longitude": 30.1985
+  },
+  {
+    "id": 26,
+    "address": "802 University Manor, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3568,
+    "longitude": 30.2005
+  },
+  {
+    "id": 27,
+    "address": "913 Manyame Manor, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3518,
+    "longitude": 30.1890
+  },
+  {
+    "id": 28,
+    "address": "124 Campus Court, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3532,
+    "longitude": 30.1910
+  },
+  {
+    "id": 29,
+    "address": "235 Student Residences, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3492,
+    "longitude": 30.1930
+  },
+  {
+    "id": 30,
+    "address": "346 Academic Apartments, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3552,
+    "longitude": 30.1950
+  },
+  {
+    "id": 31,
+    "address": "457 University Flats, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3522,
+    "longitude": 30.1970
+  },
+  {
+    "id": 32,
+    "address": "568 Manyame Flats, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3542,
+    "longitude": 30.1990
+  },
+  {
+    "id": 33,
+    "address": "679 Campus Village, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3502,
+    "longitude": 30.1880
+  },
+  {
+    "id": 34,
+    "address": "780 Student Towers, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3562,
+    "longitude": 30.1900
+  },
+  {
+    "id": 35,
+    "address": "891 Academic Square, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3512,
+    "longitude": 30.1920
+  },
+  {
+    "id": 36,
+    "address": "902 University Lodge, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3536,
+    "longitude": 30.1940
+  },
+  {
+    "id": 37,
+    "address": "113 Manyame Lodge, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3496,
+    "longitude": 30.1960
+  },
+  {
+    "id": 38,
+    "address": "224 Campus Haven, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3556,
+    "longitude": 30.1980
+  },
+  {
+    "id": 39,
+    "address": "335 Student Manor, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3526,
+    "longitude": 30.2000
+  },
+  {
+    "id": 40,
+    "address": "446 Academic Court, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3546,
+    "longitude": 30.1890
+  },
+  {
+    "id": 41,
+    "address": "557 University View, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3506,
+    "longitude": 30.1910
+  },
+  {
+    "id": 42,
+    "address": "668 Manyame View, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3566,
+    "longitude": 30.1930
+  },
+  {
+    "id": 43,
+    "address": "779 Campus Gardens, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3516,
+    "longitude": 30.1950
+  },
+  {
+    "id": 44,
+    "address": "880 Student Plaza, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3539,
+    "longitude": 30.1970
+  },
+  {
+    "id": 45,
+    "address": "991 Academic Manor, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3499,
+    "longitude": 30.1990
+  },
+  {
+    "id": 46,
+    "address": "102 University Palace, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3559,
+    "longitude": 30.1885
+  },
+  {
+    "id": 47,
+    "address": "213 Manyame Palace, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3529,
+    "longitude": 30.1905
+  },
+  {
+    "id": 48,
+    "address": "324 Campus Square, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3549,
+    "longitude": 30.1925
+  },
+  {
+    "id": 49,
+    "address": "435 Student Court, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3509,
+    "longitude": 30.1945
+  },
+  {
+    "id": 50,
+    "address": "546 Academic Plaza, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3569,
+    "longitude": 30.1965
+  },
+  {
+    "id": 51,
+    "address": "657 University Heights, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3519,
+    "longitude": 30.1985
+  },
+  {
+    "id": 52,
+    "address": "768 Manyame Heights, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3533,
+    "longitude": 30.2005
+  },
+  {
+    "id": 53,
+    "address": "879 Campus Towers, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3493,
+    "longitude": 30.1895
+  },
+  {
+    "id": 54,
+    "address": "980 Student Flats, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3553,
+    "longitude": 30.1915
+  },
+  {
+    "id": 55,
+    "address": "191 Academic Flats, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3523,
+    "longitude": 30.1935
+  },
+  {
+    "id": 56,
+    "address": "202 University Residences, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3543,
+    "longitude": 30.1955
+  },
+  {
+    "id": 57,
+    "address": "313 Manyame Residences, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3503,
+    "longitude": 30.1975
+  },
+  {
+    "id": 58,
+    "address": "424 Campus Lodge, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3563,
+    "longitude": 30.1995
+  },
+  {
+    "id": 59,
+    "address": "535 Student Village, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3513,
+    "longitude": 30.1880
+  },
+  {
+    "id": 60,
+    "address": "646 Academic Village, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3537,
+    "longitude": 30.1900
+  },
+  {
+    "id": 61,
+    "address": "757 University Complex, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3497,
+    "longitude": 30.1920
+  },
+  {
+    "id": 62,
+    "address": "868 Manyame Complex, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3557,
+    "longitude": 30.1940
+  },
+  {
+    "id": 63,
+    "address": "979 Campus Complex, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3527,
+    "longitude": 30.1960
+  },
+  {
+    "id": 64,
+    "address": "180 Student Hub, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3547,
+    "longitude": 30.1980
+  },
+  {
+    "id": 65,
+    "address": "291 Academic Hub, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3507,
+    "longitude": 30.2000
+  },
+  {
+    "id": 66,
+    "address": "302 University Corner, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3567,
+    "longitude": 30.1890
+  },
+  {
+    "id": 67,
+    "address": "413 Manyame Corner, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3517,
+    "longitude": 30.1910
+  },
+  {
+    "id": 68,
+    "address": "524 Campus Corner, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3534,
+    "longitude": 30.1930
+  },
+  {
+    "id": 69,
+    "address": "635 Student Corner, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3494,
+    "longitude": 30.1950
+  },
+  {
+    "id": 70,
+    "address": "746 Academic Corner, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3554,
+    "longitude": 30.1970
+  },
+  {
+    "id": 71,
+    "address": "857 University Mews, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3524,
+    "longitude": 30.1990
+  },
+  {
+    "id": 72,
+    "address": "968 Manyame Mews, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3544,
+    "longitude": 30.1885
+  },
+  {
+    "id": 73,
+    "address": "179 Campus Mews, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3504,
+    "longitude": 30.1905
+  },
+  {
+    "id": 74,
+    "address": "280 Student Mews, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3564,
+    "longitude": 30.1925
+  },
+  {
+    "id": 75,
+    "address": "391 Academic Terrace, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3514,
+    "longitude": 30.1945
+  },
+  {
+    "id": 76,
+    "address": "402 University Terrace, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3538,
+    "longitude": 30.1965
+  },
+  {
+    "id": 77,
+    "address": "513 Manyame Terrace, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3498,
+    "longitude": 30.1985
+  },
+  {
+    "id": 78,
+    "address": "624 Campus Terrace, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3558,
+    "longitude": 30.2005
+  },
+  {
+    "id": 79,
+    "address": "735 Student Avenue, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3528,
+    "longitude": 30.1895
+  },
+  {
+    "id": 80,
+    "address": "846 Academic Avenue, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3548,
+    "longitude": 30.1915
+  },
+  {
+    "id": 81,
+    "address": "957 University Avenue, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3508,
+    "longitude": 30.1935
+  },
+  {
+    "id": 82,
+    "address": "168 Manyame Avenue, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3568,
+    "longitude": 30.1955
+  },
+  {
+    "id": 83,
+    "address": "279 Campus Avenue, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3518,
+    "longitude": 30.1975
+  },
+  {
+    "id": 84,
+    "address": "380 Student Lane, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3532,
+    "longitude": 30.1995
+  },
+  {
+    "id": 85,
+    "address": "491 Academic Lane, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3492,
+    "longitude": 30.1880
+  },
+  {
+    "id": 86,
+    "address": "502 University Lane, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3552,
+    "longitude": 30.1900
+  },
+  {
+    "id": 87,
+    "address": "613 Manyame Lane, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3522,
+    "longitude": 30.1920
+  },
+  {
+    "id": 88,
+    "address": "724 Campus Lane, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3542,
+    "longitude": 30.1940
+  },
+  {
+    "id": 89,
+    "address": "835 Student Road, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3502,
+    "longitude": 30.1960
+  },
+  {
+    "id": 90,
+    "address": "946 Academic Road, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3562,
+    "longitude": 30.1980
+  },
+  {
+    "id": 91,
+    "address": "157 University Road, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3512,
+    "longitude": 30.2000
+  },
+  {
+    "id": 92,
+    "address": "268 Manyame Road Extension, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3536,
+    "longitude": 30.1890
+  },
+  {
+    "id": 93,
+    "address": "379 Campus Road, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3496,
+    "longitude": 30.1910
+  },
+  {
+    "id": 94,
+    "address": "480 Student Street, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3556,
+    "longitude": 30.1930
+  },
+  {
+    "id": 95,
+    "address": "591 Academic Street, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3526,
+    "longitude": 30.1950
+  },
+  {
+    "id": 96,
+    "address": "602 University Street Extension, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3546,
+    "longitude": 30.1970
+  },
+  {
+    "id": 97,
+    "address": "713 Manyame Street, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3506,
+    "longitude": 30.1990
+  },
+  {
+    "id": 98,
+    "address": "824 Campus Street, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3566,
+    "longitude": 30.1885
+  },
+  {
+    "id": 99,
+    "address": "935 Student Close, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3516,
+    "longitude": 30.1905
+  },
+  {
+    "id": 100,
+    "address": "146 Academic Close, Chinhoyi",
+    "city": "Chinhoyi",
+    "latitude": -17.3539,
+    "longitude": 30.1925
+  }
+Realistic Distance Ranges:
+0.1km - 1.0km: Very close to campus
+
+1.1km - 2.5km: Walking distance
+
+2.6km - 5.0km: Short drive/bus ride
+
+5.1km+: Further away
+
+3. Price Ranges for Chinhoyi:
+Budget: $50 - $100/month
+
+Standard: $101 - $150/month
+
+Premium: $151 - $200/month
+
+Luxury: $201 - $300/month
+
+4. Property Types:
+Student Residence
+
+Shared Apartment
+
+Private Room
+
+Family Accommodation
+
+Boarding House
+
+5. Facilities to Include:
+WiFi
+
+Security
+
+Kitchen
+
+Laundry
+
+Study Area
+
+Parking
+
+Swimming Pool (premium only)

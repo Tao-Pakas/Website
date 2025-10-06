@@ -1,0 +1,346 @@
+/* Container */
+.container {
+  padding: 8% 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 80vh;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* Grid layout for favorites */
+.favoritesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Property card */
+.propertyCard {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.propertyCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Property Image */
+.propertyImage {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.propertyImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.propertyCard:hover .propertyImage img {
+  transform: scale(1.05);
+}
+
+/* Property Actions */
+.propertyActions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.propertyCard:hover .propertyActions {
+  opacity: 1;
+}
+
+.removeButton, .viewButton {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 4px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #333;
+  text-decoration: none;
+}
+
+.removeButton:hover, .viewButton:hover {
+  background: white;
+  color: #604D3C;
+  transform: scale(1.1);
+}
+
+/* Favorite Badge */
+.favoriteBadge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  background: rgba(96, 77, 60, 0.9);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Property Details */
+.propertyDetails {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.propertyTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+  line-height: 1.3;
+}
+
+.propertyLocation {
+  color: #666;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.propertyPrice {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #604D3C;
+  margin-bottom: 1rem;
+}
+
+.propertyFeatures {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.propertyFeatures span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.propertyMeta {
+  border-top: 1px solid #e9ecef;
+  padding-top: 1rem;
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.availability {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.available {
+  background: #d4edda;
+  color: #155724;
+}
+
+.notAvailable {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Property Actions Footer */
+.propertyActionsFooter {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.viewDetailsBtn {
+  flex: 1;
+  background: #604D3C;
+  color: white;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 600;
+  transition: background 0.3s ease;
+  cursor: pointer;
+}
+
+.viewDetailsBtn:hover {
+  background: #4a392e;
+}
+
+.removeFavBtn {
+  background: #dc3545;
+  color: white;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.removeFavBtn:hover {
+  background: #c82333;
+}
+
+/* Empty State */
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #666;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin: 2rem 0;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  color: #ddd;
+  margin-bottom: 1rem;
+}
+
+.emptyState h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.emptyState p {
+  margin-bottom: 1.5rem;
+  color: #666;
+}
+
+.browseButton {
+  display: inline-block;
+  background: #604D3C;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 1rem;
+  transition: background 0.3s ease;
+}
+
+.browseButton:hover {
+  background: #4a392e;
+}
+
+/* Bulk Actions */
+.bulkActions {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.clearAllBtn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 auto;
+  transition: background 0.3s ease;
+}
+
+.clearAllBtn:hover {
+  background: #c82333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .favoritesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .propertyFeatures {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .propertyMeta {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .propertyActionsFooter {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .propertyDetails {
+    padding: 1rem;
+  }
+
+  .propertyTitle {
+    font-size: 1.1rem;
+  }
+
+  .propertyPrice {
+    font-size: 1.1rem;
+  }
+
+  .emptyState {
+    padding: 2rem 1rem;
+  }
+
+  .emptyIcon {
+    font-size: 3rem;
+  }
+}

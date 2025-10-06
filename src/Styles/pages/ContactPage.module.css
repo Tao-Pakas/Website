@@ -1,0 +1,249 @@
+:root{
+  --button-color: #9DACB2;
+  --heading-color: #F2F0ED;
+  --sub-heading-color: #D9CEBF;
+  --button-text-color: #000;
+  --shadows: hsl(0, 0%, 12%, 0.4);
+  --hero-background-color: #604D3C;
+  --background-color: #f3f3f3;
+}
+
+*{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+.mainBody{
+  background-color: var(--background-color);
+  padding: 2.8% 1%;
+}
+
+.ContactUsBody{
+    padding: 2% 1%;
+    background-color: var(--background-color);
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    height: auto;
+    position: relative;
+}
+
+.ContactForm{
+    box-shadow: 0px 0px 2px 2px var(--shadows);
+    display: flex;
+    height: auto;
+    min-height: 500px;
+    width: 60%;
+    border-radius: 16px;
+    overflow: hidden;
+    background: white;
+    background-image: url('../../Assets/images/486323981_680273697857712_2484490067764702369_n.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.ContactFormFields{
+    width: 50%;
+    background-color: var(--sub-heading-color);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    margin-left: 50%;
+}
+
+.Container1{
+  width: 80%;
+  height: auto;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  color: #000;
+  flex-direction: column;
+  padding: 4px;
+}
+
+.Container1 input,
+.Container1 textarea {
+  height: 50px;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0px 0px 2px 2px var(--shadows);
+  padding: 0 15px;
+  font-size: 1rem;
+  margin-top: 5px;
+  width: 100%;
+}
+
+.Container1 textarea {
+  height: 120px;
+  padding: 15px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.Container1 label{
+  color: #000;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.Container1 p {
+  background: white;
+  padding: 12px 15px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 2px 2px var(--shadows);
+  margin-top: 5px;
+  font-size: 1rem;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.ContactInfo{
+    box-shadow: 0px 0px 2px 2px var(--shadows);
+    background-color: var(--sub-heading-color);
+    height: auto;
+    min-height: 300px;
+    max-height: 440px;
+    width: 360px;
+    padding: 40px 20px;
+    border-radius: 16px;
+    display: flex;
+    gap: 2rem;
+    font-size: 1.4rem;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 18%;
+    left: 8%;
+}
+
+.Submit {
+  height: 50px;
+  width: 80%;
+  color: var(--button-text-color);
+  background-color: var(--button-color);
+  border: none;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-size: 1.2rem;
+  font-weight: 900;
+  margin-top: 20px;
+}
+
+.Submit:hover {
+  background-color: var(--hero-background-color);
+  color: #fff;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Loading and Error States */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.4rem;
+  color: var(--hero-background-color);
+}
+
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.4rem;
+  color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .ContactUsBody {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+  
+  .ContactForm {
+    width: 90%;
+    margin-left: 0;
+  }
+  
+  .ContactInfo {
+    position: relative;
+    width: 90%;
+    left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .ContactUsBody {
+    padding: 5% 3%;
+    gap: 20px;
+  }
+  
+  .ContactForm {
+    width: 100%;
+  }
+  
+  .ContactFormFields {
+    padding: 30px 15px;
+  }
+  
+  .Container1 {
+    width: 90%;
+  }
+  
+  .ContactInfo {
+    width: 100%;
+    padding: 30px 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ContactFormFields {
+    padding: 20px 10px;
+    gap: 15px;
+  }
+  
+  .Container1 {
+    width: 95%;
+    padding: 5px;
+  }
+  
+  .Container1 label {
+    font-size: 0.9rem;
+  }
+  
+  .Container1 input,
+  .Container1 textarea {
+    height: 45px;
+    font-size: 0.9rem;
+  }
+  
+  .Container1 textarea {
+    height: 100px;
+  }
+  
+  .Submit {
+    height: 45px;
+    font-size: 1.1rem;
+  }
+}

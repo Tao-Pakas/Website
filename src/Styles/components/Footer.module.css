@@ -1,0 +1,225 @@
+:root {
+    --nav-background-color: #604D3C;
+    --nav-logo-font-color: #D9CEBF;
+    --nav-font-color: #F2F0ED;
+    --nav-font-color-dark: #8a7f6d;
+    
+    --button-color-text: #000;
+    --button-color-background: #9DACB2;
+    
+    --nav-font-size: 1.2rem;
+    --nav-font-family: 'Segoe UI', system-ui, sans-serif;
+    
+    /* Footer-specific variables */
+    --footer-bg-color: #e6e6e6;
+    --footer-text-color: #333;
+    --footer-border-color: rgba(0,0,0,0.1);
+    --footer-spacing: 2rem;
+}
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.bodyFooter {
+    background: linear-gradient(135deg, #604D3C 0%, #9DACB2 100%);
+    width: 100%;
+    min-height: 40vh;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--nav-font-family);
+    color: var(--button-color-text);
+    line-height: 1.6;
+}
+
+/* ===== UPPER FOOTER ===== */
+.upperFooter {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    padding: var(--footer-spacing);
+    gap: 2rem;
+}
+
+.Container {
+    flex: 1 1 clamp(280px, 30%, 400px);
+    padding: 1.5rem;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    border-radius: 16px;
+}
+
+.Container h1 {
+    font-size: 1.6rem;
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* Links + Content */
+.LinksContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    text-align: center;
+}
+
+.LinksContainerLink {
+    text-decoration: none;
+    color: var(--button-color-text);
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.LinksContainerLink:hover {
+    color: var(--nav-font-color);
+    transform: translateX(3px);
+}
+
+/* Contact Box */
+.MessageBox {
+    border: 1px solid var(--footer-border-color);
+    width: 100%;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-radius: 8px;
+    background: hsl(0, 0%, 98%, 0.4);
+}
+
+.MessageBox input,
+.MessageBox textarea {
+    width: 100%;
+    padding: 0.6rem;
+    height: 34px;
+    border: 1px solid var(--footer-border-color);
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.MessageBox input:focus,
+.MessageBox textarea:focus {
+    outline: 2px solid var(--nav-background-color);
+    border-color: var(--nav-background-color);
+}
+
+/* Button */
+.MessageBox button {
+    align-self: flex-end;
+    padding: 0.6rem 1.2rem;
+    background: var(--nav-background-color);
+    color: var(--nav-font-color);
+    border: none;
+    width: 70px;
+    font-size: 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.MessageBox button:hover {
+    background: #705a48;
+}
+
+/* Social Links */
+.socialLinks {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.socialLinks a {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: var(--nav-background-color);
+    color: var(--nav-font-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.socialLinks a:hover {
+    background: #705a48;
+    transform: scale(1.1);
+}
+
+/* ===== LOWER FOOTER ===== */
+.lowerFooter {
+    width: 100%;
+    padding: 1.2rem var(--footer-spacing);
+    background: linear-gradient(135deg, #604D3C 0%, #9DACB2 100%);;
+    color: var(--nav-font-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.95rem;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    text-align: center;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1024px) {
+    .upperFooter {
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .bodyFooter {
+        min-height: auto;
+    }
+    .upperFooter {
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+    }
+    .Container {
+        width: min(100%, 420px);
+        margin-bottom: 1rem;
+    }
+    .lowerFooter {
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .upperFooter {
+        padding: 0.5rem;
+    }
+    .Container {
+        padding: 1rem;
+    }
+    .Container h1 {
+        font-size: 1.3rem;
+    }
+    .lowerFooter {
+        font-size: 0.8rem;
+        padding: 0.75rem;
+    }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+    .Container,
+    .LinksContainerLink,
+    .MessageBox button,
+    .socialLinks a {
+        transition: none;
+    }
+}
