@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client/react';
 import style from '../../Styles/pages/SingleProperty.module.css';
 import { GET_PROPERTY_DETAILS } from './Sinlgle';
@@ -24,7 +24,9 @@ import {
   FaShoppingCart,
   FaCartPlus,
   FaStar,
-  FaShare
+  FaShare,
+  FaSignInAlt,
+  FaLock
 } from 'react-icons/fa';
 import { useApp } from '../../Contexts/AppContext';
 
@@ -32,20 +34,12 @@ const API_BASE_URL = 'http://localhost:1337';
 
 export default function SingleProperty() {
   const { id } = useParams();
-  const { loading, error, data } = useQuery(GET_PROPERTY_DETAILS, {
-    variables: { documentId: id },
-  });
-
-  const {
-    isFavorite,
-    isInShortlist,
-    toggleFavorite,
-    addToShortlist,
-    removeFromShortlist,
-  } = useApp();
-
+  const navigate = useNavigate();
+  const { user, login, isFavorite, isInShortlist, toggleFavorite, addToShortlist, removeFromShortlist } = useApp();
+  
   const [selectedImage, setSelectedImage] = useState(0);
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [bookingData, setBookingData] = useState({
     name: '',
     email: '',
@@ -54,6 +48,116 @@ export default function SingleProperty() {
     message: ''
   });
 
+  const { loading, error, data } = useQuery(GET_PROPERTY_DETAILS, {
+    variables: { documentId: id },
+    skip: !user // Skip query if user is not logged in
+  });
+
+  // Redirect to login prompt if user is not authenticated
+  useEffect(() => {
+    if (!user) {
+      setShowLoginPrompt(true);
+    }
+  }, [user]);
+
+  const handleLoginClick = () => {
+    setShowLoginPrompt(false);
+    // You can redirect to login page or show login modal
+    navigate('/login'); // Or use your login modal logic
+  };
+
+  const handleCloseLoginPrompt = () => {
+    setShowLoginPrompt(false);
+    navigate('/listings'); // Redirect back to listings
+  };
+
+  const handleFavorite = () => {
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
+    toggleFavorite({ 
+      id: property.documentId, 
+      name: property.name || property.location?.Address 
+    });
+  };
+
+  const handleShortlist = () => {
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
+    
+    if (isInShortlist(property.documentId)) {
+      removeFromShortlist(property.documentId);
+    } else {
+      addToShortlist(property);
+    }
+  };
+
+  const handleBookingClick = () => {
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
+    setShowBookingForm(true);
+  };
+
+  const handleBookingSubmit = (e) => {
+    e.preventDefault();
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
+    
+    console.log('Booking data:', bookingData);
+    alert('Booking request submitted! We will contact you soon.');
+    setShowBookingForm(false);
+    setBookingData({ name: '', email: '', phone: '', date: '', message: '' });
+  };
+
+  const handleInputChange = (e) => {
+    setBookingData({
+      ...bookingData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  // Show login prompt if user is not authenticated
+  if (!user) {
+    return (
+      <div className={style.LoginRequired}>
+        <div className={style.LoginPrompt}>
+          <div className={style.LoginIcon}>
+            <FaLock size={64} />
+          </div>
+          <h2>Authentication Required</h2>
+          <p>Please log in to view property details and make bookings.</p>
+          <div className={style.LoginActions}>
+            
+            <button 
+              className={style.BackButton}
+              onClick={handleCloseLoginPrompt}
+            >
+              Back to Listings
+            </button>
+          </div>
+          <div className={style.LoginBenefits}>
+            <h3>Benefits of creating an account:</h3>
+            <ul>
+              <li>View complete property details</li>
+              <li>Save favorite properties</li>
+              <li>Shortlist accommodations</li>
+              <li>Book viewing appointments</li>
+              <li>Contact property owners</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading/error states only after authentication check
   if (loading) return <div className={style.loading}>Loading property details...</div>;
   if (error) return <div className={style.error}>Error: {error.message}</div>;
 
@@ -82,39 +186,14 @@ export default function SingleProperty() {
       : 'A comfortable student accommodation with modern amenities and convenient location near campus.';
   };
 
-  const handleFavorite = () => {
-    toggleFavorite({ 
-      id: property.documentId, 
-      name: property.name || property.location?.Address 
-    });
-  };
-
-  const handleShortlist = () => {
-    if (isInShortlist(property.documentId)) {
-      removeFromShortlist(property.documentId);
-    } else {
-      addToShortlist(property);
-    }
-  };
-
-  const handleBookingSubmit = (e) => {
-    e.preventDefault();
-    // Handle booking submission here
-    console.log('Booking data:', bookingData);
-    alert('Booking request submitted! We will contact you soon.');
-    setShowBookingForm(false);
-    setBookingData({ name: '', email: '', phone: '', date: '', message: '' });
-  };
-
-  const handleInputChange = (e) => {
-    setBookingData({
-      ...bookingData,
-      [e.target.name]: e.target.value
-    });
-  };
-
   return (
     <div className={style.SinglePropertyBody}>
+      {/* Authentication Badge */}
+      <div className={style.AuthBadge}>
+        <span>Welcome, {user.name}! </span>
+        <span className={style.AuthStatus}>✓ Authenticated</span>
+      </div>
+
       {/* Image Gallery */}
       <section className={style.ImageGallery}>
         <div className={style.MainImage}>
@@ -283,7 +362,7 @@ export default function SingleProperty() {
 
             <button 
               className={style.BookButton}
-              onClick={() => setShowBookingForm(true)}
+              onClick={handleBookingClick}
               disabled={property.details?.isFull}
             >
               {property.details?.isFull ? 'Currently Unavailable' : 'Book Viewing Appointment'}
@@ -348,6 +427,9 @@ export default function SingleProperty() {
         <div className={style.ModalOverlay}>
           <div className={style.Modal}>
             <h2>Book Viewing Appointment</h2>
+            <div className={style.UserInfo}>
+              <p>Booking as: <strong>{user.name}</strong> ({user.email})</p>
+            </div>
             <form onSubmit={handleBookingSubmit}>
               <div className={style.FormGroup}>
                 <label>Full Name</label>
@@ -357,6 +439,7 @@ export default function SingleProperty() {
                   value={bookingData.name}
                   onChange={handleInputChange}
                   required
+                  placeholder={user.name} // Pre-fill with user's name
                 />
               </div>
               <div className={style.FormGroup}>
@@ -367,6 +450,7 @@ export default function SingleProperty() {
                   value={bookingData.email}
                   onChange={handleInputChange}
                   required
+                  placeholder={user.email} // Pre-fill with user's email
                 />
               </div>
               <div className={style.FormGroup}>

@@ -299,6 +299,34 @@ body {
     animation: modalSlideIn 0.3s ease-out;
 }
 
+/* Error and Success Messages */
+.errorMessage {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.successMessage {
+  background-color: #efe;
+  border: 1px solid #cfc;
+  color: #363;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+/* Loading state */
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @keyframes modalSlideIn {
     from {
         opacity: 0;

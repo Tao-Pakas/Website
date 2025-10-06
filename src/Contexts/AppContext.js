@@ -1,5 +1,6 @@
 // Contexts/AppContext.js
-import React, { createContext, useContext, useReducer } from 'react';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { authService } from '../Contexts/AuthContext';
 
 const AppContext = createContext();
 
@@ -18,7 +19,9 @@ const initialState = {
     shortlistCount: 0
   },
   user: null,
-  listings: []
+  listings: [],
+  loading: true,
+  authError: null
 };
 
 // Actions
@@ -30,7 +33,11 @@ const ACTION_TYPES = {
   ADD_TO_SHORTLIST: 'ADD_TO_SHORTLIST',
   REMOVE_FROM_SHORTLIST: 'REMOVE_FROM_SHORTLIST',
   SET_USER: 'SET_USER',
-  SET_LISTINGS: 'SET_LISTINGS'
+  SET_LISTINGS: 'SET_LISTINGS',
+  SET_LOADING: 'SET_LOADING',
+  SET_AUTH_ERROR: 'SET_AUTH_ERROR',
+  CLEAR_AUTH_ERROR: 'CLEAR_AUTH_ERROR',
+  LOGOUT: 'LOGOUT'
 };
 
 // Reducer
@@ -105,13 +112,42 @@ const appReducer = (state, action) => {
     case ACTION_TYPES.SET_USER:
       return {
         ...state,
-        user: action.payload
+        user: action.payload,
+        authError: null,
+        loading: false
       };
 
     case ACTION_TYPES.SET_LISTINGS:
       return {
         ...state,
         listings: action.payload
+      };
+
+    case ACTION_TYPES.SET_LOADING:
+      return {
+        ...state,
+        loading: action.payload
+      };
+
+    case ACTION_TYPES.SET_AUTH_ERROR:
+      return {
+        ...state,
+        authError: action.payload,
+        loading: false
+      };
+
+    case ACTION_TYPES.CLEAR_AUTH_ERROR:
+      return {
+        ...state,
+        authError: null
+      };
+
+    case ACTION_TYPES.LOGOUT:
+      return {
+        ...state,
+        user: null,
+        authError: null,
+        loading: false
       };
 
     default:
@@ -130,10 +166,116 @@ export const AppProvider = ({ children }) => {
   const removeFromBookmarks = (itemId) => dispatch({ type: ACTION_TYPES.REMOVE_FROM_BOOKMARKS, payload: itemId });
   const addToShortlist = (item) => dispatch({ type: ACTION_TYPES.ADD_TO_SHORTLIST, payload: item });
   const removeFromShortlist = (itemId) => dispatch({ type: ACTION_TYPES.REMOVE_FROM_SHORTLIST, payload: itemId });
-  const setUser = (user) => dispatch({ type: ACTION_TYPES.SET_USER, payload: user });
   const setListings = (listings) => dispatch({ type: ACTION_TYPES.SET_LISTINGS, payload: listings });
+  const setLoading = (loading) => dispatch({ type: ACTION_TYPES.SET_LOADING, payload: loading });
+  const setAuthError = (error) => dispatch({ type: ACTION_TYPES.SET_AUTH_ERROR, payload: error });
+  const clearAuthError = () => dispatch({ type: ACTION_TYPES.CLEAR_AUTH_ERROR });
 
-  // Helper functions to check state - FIXED: Use documentId for accommodations
+  // Authentication functions
+  const setUser = (userData, token = null) => {
+    if (token) {
+      localStorage.setItem('authToken', token);
+    }
+    
+    const user = userData ? {
+      id: userData.id,
+      name: userData.username || userData.name,
+      email: userData.email,
+      isLoggedIn: true,
+      ...userData
+    } : null;
+    
+    dispatch({ type: ACTION_TYPES.SET_USER, payload: user });
+  };
+
+  const login = async (identifier, password) => {
+    setLoading(true);
+    clearAuthError();
+    
+    try {
+      const response = await authService.login(identifier, password);
+      setUser(response.user, response.jwt);
+      return { success: true, data: response };
+    } catch (error) {
+      const errorMessage = error.error?.message || 'Login failed. Please try again.';
+      setAuthError(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const register = async (userData) => {
+    setLoading(true);
+    clearAuthError();
+    
+    try {
+      const response = await authService.register(userData);
+      setUser(response.user, response.jwt);
+      return { success: true, data: response };
+    } catch (error) {
+      const errorMessage = error.error?.message || 'Registration failed. Please try again.';
+      setAuthError(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const forgotPassword = async (email) => {
+    setLoading(true);
+    clearAuthError();
+    
+    try {
+      const response = await authService.forgotPassword(email);
+      setLoading(false);
+      return { success: true, data: response };
+    } catch (error) {
+      const errorMessage = error.error?.message || 'Failed to send reset instructions.';
+      setAuthError(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const resetPassword = async (code, password, passwordConfirmation) => {
+    setLoading(true);
+    clearAuthError();
+    
+    try {
+      const response = await authService.resetPassword(code, password, passwordConfirmation);
+      setLoading(false);
+      return { success: true, data: response };
+    } catch (error) {
+      const errorMessage = error.error?.message || 'Password reset failed.';
+      setAuthError(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('authToken');
+    dispatch({ type: ACTION_TYPES.LOGOUT });
+  };
+
+  // Check for existing authentication on app start
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          setLoading(true);
+          const userData = await authService.getMe();
+          setUser(userData);
+        } catch (error) {
+          console.error('Auth check failed:', error);
+          localStorage.removeItem('authToken');
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  // Helper functions to check state - MAINTAINED EXISTING FUNCTIONALITY
   const isFavorite = (itemId) => 
     state.favorites.items.some(item => item.id === itemId);
   
@@ -143,7 +285,7 @@ export const AppProvider = ({ children }) => {
   const isInShortlist = (itemId) => 
     state.shortlist.items.some(item => item.id === itemId);
 
-  // Toggle functions for easier use
+  // Toggle functions for easier use - MAINTAINED EXISTING FUNCTIONALITY
   const toggleFavorite = (item) => {
     if (isFavorite(item.id)) {
       removeFromFavorites(item.id);
@@ -172,23 +314,33 @@ export const AppProvider = ({ children }) => {
     // State
     ...state,
     
-    // Actions
+    // Original Actions (unchanged)
     addToFavorites,
     removeFromFavorites,
     addToBookmarks,
     removeFromBookmarks,
     addToShortlist,
     removeFromShortlist,
-    setUser,
     setListings,
     
-    // Helper functions
+    // NEW: Authentication actions
+    setUser,
+    login,
+    register,
+    forgotPassword,
+    resetPassword,
+    logout,
+    setLoading,
+    setAuthError,
+    clearAuthError,
+    
+    // Helper functions (unchanged)
     isFavorite,
     isBookmarked,
     isInShortlist,
     toggleFavorite,
     toggleBookmark,
-    toggleShortlist, // Added for consistency
+    toggleShortlist,
   };
 
   return (

@@ -1,14 +1,16 @@
 import style from '../../Styles/pages/Accommodations.module.css';
 import React, { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from "@apollo/client/react";
-import {FaHeart, FaRegHeart, FaShoppingCart,FaCartPlus} from 'react-icons/fa';
+import {FaHeart, FaRegHeart, FaShoppingCart,FaCartPlus, FaSignInAlt, FaLock} from 'react-icons/fa';
 import { GET_ACCOMMODATIONS_DETAILS } from './Accommodations';
 import { useApp } from '../../Contexts/AppContext';
 
 export default function Accommodations() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(1000); // Set high to get all data
+  const navigate = useNavigate();
+  const { user, toggleFavorite, toggleShortlist, isFavorite, isInShortlist } = useApp();
 
   const { loading, error, data } = useQuery(GET_ACCOMMODATIONS_DETAILS, {
     variables: {
@@ -65,17 +67,8 @@ export default function Accommodations() {
     });
   }, [accommodations]);
 
-  const {
-    toggleFavorite,
-    toggleBookmark,
-    toggleShortlist,
-    isFavorite,
-    isBookmarked,
-    isInShortlist,
-    favorites
-  } = useApp();
-
   const [recentAction, setRecentAction] = useState(null);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [filters, setFilters] = useState({
     distance: '',
     price: '',
@@ -197,8 +190,19 @@ export default function Accommodations() {
     setCurrentPage(1);
   };
 
+  // Handle login requirement for actions
+  const requireLogin = (actionType, accommodation) => {
+    if (!user) {
+      setShowLoginPrompt(true);
+      return false;
+    }
+    return true;
+  };
+
   // Favorite handler
   const handleFavorite = (accommodation) => {
+    if (!requireLogin('favorite', accommodation)) return;
+    
     const property = {
       id: accommodation.documentId,
       name: accommodation.location?.Address,
@@ -221,6 +225,8 @@ export default function Accommodations() {
   };
 
   const handleShortlist = (accommodation) => {
+    if (!requireLogin('shortlist', accommodation)) return;
+    
     const property = {
       id: accommodation.documentId,
       name: accommodation.location?.Address,
@@ -240,6 +246,16 @@ export default function Accommodations() {
       isAdded: !wasInShortlist
     });
     setTimeout(() => setRecentAction(null), 3000);
+  };
+
+  // Handle login navigation
+  const handleLoginClick = () => {
+    setShowLoginPrompt(false);
+    navigate('/login'); // Or use your login modal logic
+  };
+
+  const handleCloseLoginPrompt = () => {
+    setShowLoginPrompt(false);
   };
 
   // Handle filter changes
@@ -269,6 +285,46 @@ export default function Accommodations() {
 
   return (
     <>
+      {/* Login Prompt Modal */}
+      {showLoginPrompt && (
+        <div className={style.loginModalOverlay}>
+          <div className={style.loginModal}>
+            <div className={style.loginModalHeader}>
+              <FaLock className={style.lockIcon} />
+              <h3>Authentication Required</h3>
+            </div>
+            <div className={style.loginModalBody}>
+              <p>Please log in to save properties to your favorites and shortlist.</p>
+              <div className={style.loginBenefits}>
+                <h4>Benefits of logging in:</h4>
+                <ul>
+                  <li>Save favorite properties</li>
+                  <li>Create shortlists for comparison</li>
+                  <li>Book viewing appointments</li>
+                  <li>Contact property owners</li>
+                  <li>Get personalized recommendations</li>
+                </ul>
+              </div>
+            </div>
+            <div className={style.loginModalActions}>
+              <button 
+                className={style.loginButton}
+                onClick={handleLoginClick}
+              >
+                <FaSignInAlt />
+                Log In / Sign Up
+              </button>
+              <button 
+                className={style.cancelButton}
+                onClick={handleCloseLoginPrompt}
+              >
+                Continue Browsing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Action Feedback Toast */}
       {recentAction && (
         <div className={style.toast}>
@@ -280,6 +336,14 @@ export default function Accommodations() {
       )}
       
       <div className={style.AccommodationBody}>
+        {/* User Status Bar */}
+        {user && (
+          <div className={style.userStatusBar}>
+            <span>Welcome, {user.name}! </span>
+            <span className={style.authStatus}>✓ Logged In</span>
+          </div>
+        )}
+
         {/* Pagination Controls - Simplified since we're loading all data */}
         <div className={style.paginationControls}>
           <button onClick={increasePageSize} className={style.loadMoreBtn}>
@@ -474,15 +538,17 @@ export default function Accommodations() {
                     </Link>
                     <div className={style.iconsContainer}>
                       <button 
-                        className={`${style.iconButton} ${isFavorite(documentId) ? style.active : ''}`}
+                        className={`${style.iconButton} ${isFavorite(documentId) ? style.active : ''} ${!user ? style.disabled : ''}`}
                         onClick={() => handleFavorite(accommodation)}
+                        title={!user ? "Log in to add to favorites" : isFavorite(documentId) ? "Remove from favorites" : "Add to favorites"}
                       >
                         {isFavorite(documentId) ? <FaHeart color="red" /> : <FaRegHeart />}
                       </button>
 
                       <button 
-                        className={`${style.iconButton} ${isInShortlist(documentId) ? style.active : ''}`}
+                        className={`${style.iconButton} ${isInShortlist(documentId) ? style.active : ''} ${!user ? style.disabled : ''}`}
                         onClick={() => handleShortlist(accommodation)}
+                        title={!user ? "Log in to add to shortlist" : isInShortlist(documentId) ? "Remove from shortlist" : "Add to shortlist"}
                       >
                         {isInShortlist(documentId) ? <FaShoppingCart color="green" /> : <FaCartPlus />}
                       </button>

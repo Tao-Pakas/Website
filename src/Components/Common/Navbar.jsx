@@ -13,20 +13,34 @@ import {
   FaDashcube,
   FaTachometerAlt,
   FaUser,
-  FaSignInAlt
+  FaSignInAlt,
+  FaExclamationCircle
 } from 'react-icons/fa';
 import { useApp } from '../../Contexts/AppContext';
 
 export default function Navbar() {
-  const { favorites, bookmarks, shortlist, user, setUser } = useApp();
+  const { 
+    favorites, 
+    bookmarks, 
+    shortlist, 
+    user, 
+    login, 
+    register, 
+    forgotPassword, 
+    logout 
+  } = useApp();
+  
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('login'); // 'login', 'signup', 'forgot'
-  
+  const [activeTab, setActiveTab] = useState('login');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
   // Form state management
   const [formData, setFormData] = useState({
-    loginUsername: '',
+    loginIdentifier: '',
     loginPassword: '',
     signupUsername: '',
     signupEmail: '',
@@ -39,6 +53,12 @@ export default function Navbar() {
   const mobileMenuRef = useRef(null);
   const loginModalRef = useRef(null);
 
+  // Clear messages when switching tabs
+  useEffect(() => {
+    setError('');
+    setSuccess('');
+  }, [activeTab]);
+
   // Toggle dropdown menu
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -49,19 +69,23 @@ export default function Navbar() {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Handle login button click - show modal with login form
+  // Handle login button click
   const handleLoginClick = () => {
     setShowLoginModal(true);
-    setActiveTab('login'); // Reset to login tab
+    setActiveTab('login');
     setIsMobileMenuOpen(false);
+    setError('');
+    setSuccess('');
   };
 
   // Close login modal and reset form
   const handleCloseLogin = () => {
     setShowLoginModal(false);
     setActiveTab('login');
+    setError('');
+    setSuccess('');
     setFormData({
-      loginUsername: '',
+      loginIdentifier: '',
       loginPassword: '',
       signupUsername: '',
       signupEmail: '',
@@ -79,61 +103,108 @@ export default function Navbar() {
     }));
   };
 
-  // Handle form submissions
-  const handleLoginSubmit = (e) => {
+  // Handle login form submission
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login attempt:', {
-      username: formData.loginUsername,
-      password: formData.loginPassword
-    });
-    
-    // Mock successful login - replace with actual API call
-    setUser({
-      id: 1,
-      name: formData.loginUsername,
-      email: `${formData.loginUsername}@example.com`,
-      isLoggedIn: true
-    });
-    
-    setShowLoginModal(false);
-    alert('Login successful!');
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await login(formData.loginIdentifier, formData.loginPassword);
+      
+      if (result.success) {
+        setShowLoginModal(false);
+        setSuccess('Login successful!');
+        
+        // Reset form
+        setFormData(prev => ({
+          ...prev,
+          loginIdentifier: '',
+          loginPassword: ''
+        }));
+      } else {
+        setError(result.error);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSignupSubmit = (e) => {
-    e.preventDefault();
-    console.log('Signup attempt:', {
+  // Handle signup form submission
+  // In your Navbar component - handleSignupSubmit function
+const handleSignupSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+
+  try {
+    const result = await register({
       username: formData.signupUsername,
       email: formData.signupEmail,
-      fullName: formData.signupFullName,
-      password: formData.signupPassword
+      password: formData.signupPassword,
+      // Remove fullName if not in your Strapi user model
+      // fullName: formData.signupFullName,
     });
-    
-    // Mock successful signup - replace with actual API call
-    setUser({
-      id: 2,
-      name: formData.signupFullName,
-      email: formData.signupEmail,
-      isLoggedIn: true
-    });
-    
-    setShowLoginModal(false);
-    alert('Account created successfully!');
-  };
 
-  const handleForgotPasswordSubmit = (e) => {
+    if (result.success) {
+      setShowLoginModal(false);
+      setSuccess('Account created successfully!');
+      
+      // Reset form
+      setFormData(prev => ({
+        ...prev,
+        signupUsername: '',
+        signupEmail: '',
+        signupFullName: '', // Keep if you want to store locally
+        signupPassword: ''
+      }));
+    } else {
+      setError(result.error);
+    }
+  } catch (error) {
+    console.error('Signup error:', error);
+    setError('Registration failed. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // Handle forgot password submission
+  const handleForgotPasswordSubmit = async (e) => {
     e.preventDefault();
-    console.log('Password reset requested for:', formData.forgotEmail);
-    
-    // Mock password reset - replace with actual API call
-    alert(`Password reset instructions sent to ${formData.forgotEmail}`);
-    setActiveTab('login');
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await forgotPassword(formData.forgotEmail);
+      
+      if (result.success) {
+        setSuccess('Password reset instructions sent to your email!');
+        setFormData(prev => ({ ...prev, forgotEmail: '' }));
+        setTimeout(() => {
+          setActiveTab('login');
+          setSuccess('');
+        }, 3000);
+      } else {
+        setError(result.error);
+      }
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      setError('Failed to send reset instructions.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle logout
   const handleLogout = () => {
-    setUser(null);
+    logout();
     setIsDropdownOpen(false);
     setIsMobileMenuOpen(false);
+    setSuccess('Logged out successfully!');
   };
 
   // Close dropdowns when clicking outside
@@ -370,19 +441,34 @@ export default function Navbar() {
                 <FaTimes />
               </button>
             </div>
+
+            {/* Error/Success Messages */}
+            {error && (
+              <div className={style.errorMessage}>
+                <FaExclamationCircle />
+                {error}
+              </div>
+            )}
+            
+            {success && (
+              <div className={style.successMessage}>
+                {success}
+              </div>
+            )}
             
             {/* === Login Form === */}
             {activeTab === 'login' && (
               <form onSubmit={handleLoginSubmit} className={style.loginForm}>
                 <div className={style.formGroup}>
-                  <label htmlFor="loginUsername">Username</label>
+                  <label htmlFor="loginIdentifier">Email or Username</label>
                   <input
                     type="text"
-                    id="loginUsername"
-                    value={formData.loginUsername}
-                    onChange={(e) => handleInputChange('loginUsername', e.target.value)}
-                    placeholder="Enter your username"
+                    id="loginIdentifier"
+                    value={formData.loginIdentifier}
+                    onChange={(e) => handleInputChange('loginIdentifier', e.target.value)}
+                    placeholder="Enter your email or username"
                     required
+                    disabled={loading}
                   />
                 </div>
                 
@@ -395,6 +481,7 @@ export default function Navbar() {
                     onChange={(e) => handleInputChange('loginPassword', e.target.value)}
                     placeholder="Enter your password"
                     required
+                    disabled={loading}
                   />
                 </div>
                 
@@ -407,9 +494,17 @@ export default function Navbar() {
                   </span>
                 </div>
                 
-                <button type="submit" className={style.submitButton}>
-                  <FaSignInAlt />
-                  Sign In
+                <button 
+                  type="submit" 
+                  className={style.submitButton}
+                  disabled={loading}
+                >
+                  {loading ? 'Signing In...' : (
+                    <>
+                      <FaSignInAlt />
+                      Sign In
+                    </>
+                  )}
                 </button>
               </form>
             )}
@@ -426,6 +521,7 @@ export default function Navbar() {
                     onChange={(e) => handleInputChange('signupUsername', e.target.value)}
                     placeholder="Enter your username"
                     required
+                    disabled={loading}
                   />
                 </div>
                 
@@ -438,6 +534,7 @@ export default function Navbar() {
                     onChange={(e) => handleInputChange('signupEmail', e.target.value)}
                     placeholder="Enter your email"
                     required
+                    disabled={loading}
                   />
                 </div>
                 
@@ -450,6 +547,7 @@ export default function Navbar() {
                     onChange={(e) => handleInputChange('signupFullName', e.target.value)}
                     placeholder="Enter your full name"
                     required
+                    disabled={loading}
                   />
                 </div>
                 
@@ -460,13 +558,19 @@ export default function Navbar() {
                     id="signupPassword"
                     value={formData.signupPassword}
                     onChange={(e) => handleInputChange('signupPassword', e.target.value)}
-                    placeholder="Enter password"
+                    placeholder="Enter password (min. 6 characters)"
                     required
+                    minLength="6"
+                    disabled={loading}
                   />
                 </div>
                 
-                <button type="submit" className={style.submitButton}>
-                  Create Account
+                <button 
+                  type="submit" 
+                  className={style.submitButton}
+                  disabled={loading}
+                >
+                  {loading ? 'Creating Account...' : 'Create Account'}
                 </button>
               </form>
             )}
@@ -483,11 +587,16 @@ export default function Navbar() {
                     onChange={(e) => handleInputChange('forgotEmail', e.target.value)}
                     placeholder="Enter your registered email"
                     required
+                    disabled={loading}
                   />
                 </div>
                 
-                <button type="submit" className={style.submitButton}>
-                  Reset Password
+                <button 
+                  type="submit" 
+                  className={style.submitButton}
+                  disabled={loading}
+                >
+                  {loading ? 'Sending...' : 'Reset Password'}
                 </button>
               </form>
             )}
