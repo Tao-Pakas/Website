@@ -1,0 +1,944 @@
+
+Implementing Student-Landlord Inquiry System
+DashBoard.jsx
+JSX 19.51KB
+LandLordDashBoard.jsx
+JSX 31.29KB
+SingleProperty.jsx
+JSX 17.13KB
+ok so i want these pages to communicate with each other like this, 1,student views accommodation, decides to book a room or make an appointment to view the house, clicks on the contact booking button, 2( inquiries appear on the recent inquiries on the landlord dashboard and have states in progress, done and unread, and notifiaction icon adds notification or alerts the landlord that he/she has new inquiry on property {name}, 3(inquiries sent  by student appear on the student dashboard and also have the states, students choose date for appoinment and other details, meassge, landlord replies message, or make counter date and agree on the condtions etc so make these functions
+I'll help you implement the communication flow between student and landlord dashboards for property inquiries and bookings. Here's the complete implementation:
+
+1. First, create the necessary GraphQL queries and mutations
+graphql
+// queries.js
+import { gql } from '@apollo/client';
+
+export const GET_USER_INQUIRIES = gql`
+  query GetUserInquiries($userId: ID!) {
+    inquiries(filters: { userId: { eq: $userId } }, sort: "createdAt:desc") {
+      data {
+        id
+        attributes {
+          propertyId
+          propertyName
+          landlordId
+          userId
+          userName
+          userEmail
+          userPhone
+          message
+          preferredDate
+          status
+          landlordReply
+          counterDate
+          createdAt
+          updatedAt
+        }
+      }
+    }
+  }
+`;
+
+export const GET_LANDLORD_INQUIRIES = gql`
+  query GetLandlordInquiries($landlordId: ID!) {
+    inquiries(filters: { landlordId: { eq: $landlordId } }, sort: "createdAt:desc") {
+      data {
+        id
+        attributes {
+          propertyId
+          propertyName
+          landlordId
+          userId
+          userName
+          userEmail
+          userPhone
+          message
+          preferredDate
+          status
+          landlordReply
+          counterDate
+          createdAt
+          updatedAt
+        }
+      }
+    }
+  }
+`;
+
+export const CREATE_INQUIRY = gql`
+  mutation CreateInquiry($data: InquiryInput!) {
+    createInquiry(data: $data) {
+      data {
+        id
+        attributes {
+          propertyId
+          propertyName
+          status
+          createdAt
+        }
+      }
+    }
+  }
+`;
+
+export const UPDATE_INQUIRY_STATUS = gql`
+  mutation UpdateInquiryStatus($id: ID!, $status: String!, $landlordReply: String, $counterDate: String) {
+    updateInquiry(id: $id, data: { status: $status, landlordReply: $landlordReply, counterDate: $counterDate }) {
+      data {
+        id
+        attributes {
+          status
+          landlordReply
+          counterDate
+          updatedAt
+        }
+      }
+    }
+  }
+`;
+2. Update the AppContext to handle inquiries
+javascript
+// AppContext.jsx - Add these to your existing context
+import { useMutation, useQuery } from '@apollo/client';
+import { CREATE_INQUIRY, GET_USER_INQUIRIES, UPDATE_INQUIRY_STATUS } from '../graphql/queries';
+
+// Add to your AppProvider component
+const [userInquiries, setUserInquiries] = useState([]);
+
+// Get user inquiries
+const { data: inquiriesData, refetch: refetchInquiries } = useQuery(GET_USER_INQUIRIES, {
+  variables: { userId: user?.id },
+  skip: !user?.id
+});
+
+useEffect(() => {
+  if (inquiriesData?.inquiries?.data) {
+    setUserInquiries(inquiriesData.inquiries.data);
+  }
+}, [inquiriesData]);
+
+// Create inquiry mutation
+const [createInquiryMutation] = useMutation(CREATE_INQUIRY);
+
+const createInquiry = async (inquiryData) => {
+  try {
+    const { data } = await createInquiryMutation({
+      variables: {
+        data: {
+          propertyId: inquiryData.propertyId,
+          propertyName: inquiryData.propertyName,
+          landlordId: inquiryData.landlordId,
+          userId: user.id,
+          userName: inquiryData.userName,
+          userEmail: inquiryData.userEmail,
+          userPhone: inquiryData.userPhone,
+          message: inquiryData.message,
+          preferredDate: inquiryData.preferredDate,
+          status: 'unread'
+        }
+      }
+    });
+    
+    await refetchInquiries();
+    return { success: true, data: data.createInquiry.data };
+  } catch (error) {
+    console.error('Error creating inquiry:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Update inquiry status
+const [updateInquiryStatusMutation] = useMutation(UPDATE_INQUIRY_STATUS);
+
+const updateInquiryStatus = async (inquiryId, updates) => {
+  try {
+    const { data } = await updateInquiryStatusMutation({
+      variables: {
+        id: inquiryId,
+        ...updates
+      }
+    });
+    
+    await refetchInquiries();
+    return { success: true, data: data.updateInquiry.data };
+  } catch (error) {
+    console.error('Error updating inquiry:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Add to context value
+const contextValue = {
+  // ... existing properties
+  userInquiries,
+  createInquiry,
+  updateInquiryStatus,
+  refetchInquiries
+};
+3. Update SingleProperty.jsx with enhanced booking functionality
+javascript
+// SingleProperty.jsx - Update the booking functionality
+import { useApp } from '../../Contexts/AppContext';
+
+// Inside your SingleProperty component, replace the handleBookingSubmit function:
+
+const { createInquiry } = useApp();
+
+const handleBookingSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!user) {
+    setShowLoginPrompt(true);
+    return;
+  }
+
+  try {
+    const inquiryData = {
+      propertyId: property.documentId,
+      propertyName: property.name || property.location?.Address,
+      landlordId: property.landlord?.id || property.attributes?.landlordId || "TEMP-LANDLORD-ID",
+      userName: bookingData.name || user.name || user.username,
+      userEmail: bookingData.email || user.email,
+      userPhone: bookingData.phone,
+      message: bookingData.message,
+      preferredDate: bookingData.date
+    };
+
+    const result = await createInquiry(inquiryData);
+    
+    if (result.success) {
+      alert("Appointment request sent to landlord! They will contact you soon.");
+      setShowBookingForm(false);
+      setBookingData({ 
+        name: "", 
+        email: "", 
+        phone: "", 
+        date: "", 
+        message: "" 
+      });
+    } else {
+      throw new Error(result.error);
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong. Please try again.");
+  }
+};
+
+// Add notification badge for new inquiries
+const { userInquiries } = useApp();
+const newInquiriesCount = userInquiries.filter(inquiry => 
+  inquiry.attributes.status === 'unread'
+).length;
+4. Update Student Dashboard (DashBoard.jsx) with inquiries section
+javascript
+// DashBoard.jsx - Add inquiries tab and functionality
+import { FaEnvelope, FaClock, FaCheckCircle, FaReply } from 'react-icons/fa';
+
+// Add to your tabs
+<button 
+  className={`${style.tab} ${activeTab === 'inquiries' ? style.activeTab : ''}`}
+  onClick={() => setActiveTab('inquiries')}
+>
+  <FaEnvelope />
+  My Inquiries
+  {newInquiriesCount > 0 && (
+    <span className={style.notificationBadge}>{newInquiriesCount}</span>
+  )}
+</button>
+
+// Add inquiries tab content
+{activeTab === 'inquiries' && (
+  <div className={style.inquiriesTab}>
+    <div className={style.tabHeader}>
+      <h2>My Property Inquiries</h2>
+      <p>Track your booking requests and communicate with landlords</p>
+    </div>
+
+    <div className={style.inquiriesList}>
+      {userInquiries.map(inquiry => {
+        const inquiryAttr = inquiry.attributes;
+        return (
+          <div key={inquiry.id} className={style.inquiryCard}>
+            <div className={style.inquiryHeader}>
+              <h3>{inquiryAttr.propertyName}</h3>
+              <div className={`${style.inquiryStatus} ${style[inquiryAttr.status]}`}>
+                {inquiryAttr.status === 'unread' && <FaClock />}
+                {inquiryAttr.status === 'in-progress' && <FaReply />}
+                {inquiryAttr.status === 'done' && <FaCheckCircle />}
+                {inquiryAttr.status.replace('-', ' ')}
+              </div>
+            </div>
+            
+            <div className={style.inquiryDetails}>
+              <div className={style.inquiryMeta}>
+                <span><strong>Preferred Date:</strong> {inquiryAttr.preferredDate ? new Date(inquiryAttr.preferredDate).toLocaleDateString() : 'Not specified'}</span>
+                <span><strong>Sent:</strong> {new Date(inquiryAttr.createdAt).toLocaleDateString()}</span>
+              </div>
+              
+              <div className={style.inquiryMessage}>
+                <h4>Your Message:</h4>
+                <p>{inquiryAttr.message}</p>
+              </div>
+
+              {inquiryAttr.landlordReply && (
+                <div className={style.landlordReply}>
+                  <h4>Landlord's Response:</h4>
+                  <p>{inquiryAttr.landlordReply}</p>
+                  {inquiryAttr.counterDate && (
+                    <p><strong>Suggested Date:</strong> {new Date(inquiryAttr.counterDate).toLocaleDateString()}</p>
+                  )}
+                </div>
+              )}
+
+              <div className={style.inquiryActions}>
+                {inquiryAttr.status === 'unread' && (
+                  <button className={style.pendingBtn}>
+                    Waiting for response...
+                  </button>
+                )}
+                {inquiryAttr.status === 'in-progress' && inquiryAttr.landlordReply && (
+                  <div className={style.responseActions}>
+                    <button className={style.acceptBtn}>
+                      Accept Suggested Date
+                    </button>
+                    <button className={style.suggestBtn}>
+                      Suggest New Date
+                    </button>
+                  </div>
+                )}
+                {inquiryAttr.status === 'done' && (
+                  <button className={style.completedBtn}>
+                    Booking Completed
+                  </button>
+                )}
+                <Link 
+                  to={`/property/${inquiryAttr.propertyId}`}
+                  className={style.viewPropertyBtn}
+                >
+                  View Property
+                </Link>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+      
+      {userInquiries.length === 0 && (
+        <div className={style.emptyState}>
+          <FaEnvelope />
+          <h3>No inquiries yet</h3>
+          <p>When you book viewing appointments, they will appear here</p>
+          <Link to="/listings" className={style.browseButton}>
+            <FaSearch />
+            Browse Properties
+          </Link>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+5. Update Landlord Dashboard with enhanced inquiries management
+javascript
+// LandLordDashBoard.jsx - Replace the entire inquiries handling
+import { useQuery, useMutation } from '@apollo/client';
+import { GET_LANDLORD_INQUIRIES, UPDATE_INQUIRY_STATUS } from '../../graphql/queries';
+
+// Inside LandlordDashboard component
+const [inquiries, setInquiries] = useState([]);
+const [newInquiriesCount, setNewInquiriesCount] = useState(0);
+
+// Get landlord inquiries
+const { data: inquiriesData, loading: inquiriesLoading, refetch: refetchInquiries } = useQuery(GET_LANDLORD_INQUIRIES, {
+  variables: { landlordId: user?.id },
+  skip: !user?.id
+});
+
+useEffect(() => {
+  if (inquiriesData?.inquiries?.data) {
+    const landlordInquiries = inquiriesData.inquiries.data;
+    setInquiries(landlordInquiries);
+    
+    // Count new inquiries for notification
+    const newInquiries = landlordInquiries.filter(inquiry => 
+      inquiry.attributes.status === 'unread'
+    );
+    setNewInquiriesCount(newInquiries.length);
+  }
+}, [inquiriesData]);
+
+// Update inquiry status mutation
+const [updateInquiryMutation] = useMutation(UPDATE_INQUIRY_STATUS);
+
+const handleUpdateInquiry = async (inquiryId, updates) => {
+  try {
+    const { data } = await updateInquiryMutation({
+      variables: {
+        id: inquiryId,
+        ...updates
+      }
+    });
+    
+    await refetchInquiries();
+    return { success: true, data: data.updateInquiry.data };
+  } catch (error) {
+    console.error('Error updating inquiry:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Enhanced inquiry handlers
+const handleReplyToInquiry = async (inquiryId, replyMessage, counterDate = null) => {
+  const reply = prompt('Enter your response to the student:', '');
+  if (reply) {
+    const result = await handleUpdateInquiry(inquiryId, {
+      status: 'in-progress',
+      landlordReply: reply,
+      counterDate: counterDate
+    });
+    
+    if (result.success) {
+      alert('Reply sent to student!');
+    }
+  }
+};
+
+const handleSuggestDate = async (inquiryId) => {
+  const newDate = prompt('Suggest a new date (YYYY-MM-DD):', '');
+  if (newDate) {
+    const reply = prompt('Enter your message with the suggested date:', '');
+    if (reply) {
+      const result = await handleUpdateInquiry(inquiryId, {
+        status: 'in-progress',
+        landlordReply: reply,
+        counterDate: newDate
+      });
+      
+      if (result.success) {
+        alert('Suggested date sent to student!');
+      }
+    }
+  }
+};
+
+const handleMarkAsDone = async (inquiryId) => {
+  const result = await handleUpdateInquiry(inquiryId, {
+    status: 'done'
+  });
+  
+  if (result.success) {
+    alert('Inquiry marked as completed!');
+  }
+};
+
+const handleCloseInquiry = async (inquiryId) => {
+  const result = await handleUpdateInquiry(inquiryId, {
+    status: 'done'
+  });
+};
+
+// Update the inquiries tab in the landlord dashboard
+{activeTab === 'inquiries' && (
+  <div className={style.inquiriesTab}>
+    <div className={style.tabHeader}>
+      <h2>Property Inquiries</h2>
+      <div className={style.inquiryStats}>
+        <span className={style.newInquiries}>
+          {newInquiriesCount} New
+        </span>
+        <span>{inquiries.length} Total</span>
+        <span className={style.inProgressInquiries}>
+          {inquiries.filter(i => i.attributes.status === 'in-progress').length} In Progress
+        </span>
+      </div>
+    </div>
+
+    <div className={style.inquiriesList}>
+      {inquiries.map(inquiry => {
+        const inquiryAttr = inquiry.attributes;
+        return (
+          <div key={inquiry.id} className={`${style.inquiryCard} ${style[inquiryAttr.status]}`}>
+            <div className={style.inquiryHeader}>
+              <div className={style.inquiryProperty}>
+                <h3>{inquiryAttr.propertyName}</h3>
+                {getInquiryStatusBadge(inquiryAttr.status)}
+                {inquiryAttr.status === 'unread' && (
+                  <span className={style.newBadge}>NEW</span>
+                )}
+              </div>
+              <div className={style.inquiryDate}>
+                {new Date(inquiryAttr.createdAt).toLocaleDateString()}
+                <br />
+                <small>{new Date(inquiryAttr.createdAt).toLocaleTimeString()}</small>
+              </div>
+            </div>
+            
+            <div className={style.inquiryContent}>
+              <div className={style.userInfo}>
+                <div className={style.userDetails}>
+                  <h4>{inquiryAttr.userName}</h4>
+                  <p>📧 {inquiryAttr.userEmail}</p>
+                  <p>📞 {inquiryAttr.userPhone}</p>
+                </div>
+                <div className={style.preferredDate}>
+                  <strong>Preferred Viewing Date:</strong>
+                  <br />
+                  {inquiryAttr.preferredDate ? new Date(inquiryAttr.preferredDate).toLocaleDateString() : 'Not specified'}
+                </div>
+              </div>
+              
+              <div className={style.inquiryMessage}>
+                <h4>Student's Message:</h4>
+                <p>{inquiryAttr.message}</p>
+              </div>
+
+              {inquiryAttr.landlordReply && (
+                <div className={style.landlordReply}>
+                  <h4>Your Response:</h4>
+                  <p>{inquiryAttr.landlordReply}</p>
+                  {inquiryAttr.counterDate && (
+                    <p><strong>Your Suggested Date:</strong> {new Date(inquiryAttr.counterDate).toLocaleDateString()}</p>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <div className={style.inquiryActions}>
+              {inquiryAttr.status === 'unread' && (
+                <>
+                  <button 
+                    className={style.replyBtn}
+                    onClick={() => handleReplyToInquiry(inquiry.id)}
+                  >
+                    <FaEnvelope />
+                    Reply
+                  </button>
+                  <button 
+                    className={style.suggestDateBtn}
+                    onClick={() => handleSuggestDate(inquiry.id)}
+                  >
+                    📅 Suggest Date
+                  </button>
+                  <button 
+                    className={style.markProgressBtn}
+                    onClick={() => handleUpdateInquiry(inquiry.id, { status: 'in-progress' })}
+                  >
+                    Mark as In Progress
+                  </button>
+                </>
+              )}
+              
+              {inquiryAttr.status === 'in-progress' && (
+                <>
+                  <button 
+                    className={style.replyBtn}
+                    onClick={() => handleReplyToInquiry(inquiry.id)}
+                  >
+                    <FaEnvelope />
+                    Follow Up
+                  </button>
+                  <button 
+                    className={style.suggestDateBtn}
+                    onClick={() => handleSuggestDate(inquiry.id)}
+                  >
+                    📅 New Date
+                  </button>
+                  <button 
+                    className={style.markDoneBtn}
+                    onClick={() => handleMarkAsDone(inquiry.id)}
+                  >
+                    <FaCheckCircle />
+                    Mark as Done
+                  </button>
+                </>
+              )}
+              
+              <button className={style.callBtn}>
+                <FaPhone />
+                Call Student
+              </button>
+              
+              {inquiryAttr.status === 'done' && (
+                <button 
+                  className={style.reopenBtn}
+                  onClick={() => handleUpdateInquiry(inquiry.id, { status: 'in-progress' })}
+                >
+                  Reopen
+                </button>
+              )}
+              
+              <button 
+                className={style.deleteBtn}
+                onClick={() => handleDeleteInquiry(inquiry.id)}
+              >
+                <FaTrash />
+              </button>
+            </div>
+          </div>
+        );
+      })}
+      
+      {inquiries.length === 0 && (
+        <div className={style.emptyState}>
+          <FaEnvelope className={style.emptyIcon} />
+          <h3>No inquiries yet</h3>
+          <p>Inquiries from potential tenants will appear here once you have active listings</p>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+6. Add the necessary CSS styles
+Add these styles to your respective CSS modules:
+
+css
+/* For notification badges */
+.notificationBadge {
+  background: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+}
+
+/* Inquiry status styles */
+.inquiryStatus.unread {
+  background: #3498db;
+  color: white;
+}
+
+.inquiryStatus.in-progress {
+  background: #f39c12;
+  color: white;
+}
+
+.inquiryStatus.done {
+  background: #27ae60;
+  color: white;
+}
+
+/* Inquiry card states */
+.inquiryCard.unread {
+  border-left: 4px solid #3498db;
+}
+
+.inquiryCard.in-progress {
+  border-left: 4px solid #f39c12;
+}
+
+.inquiryCard.done {
+  border-left: 4px solid #27ae60;
+}
+
+.newBadge {
+  background: #e74c3c;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: bold;
+  margin-left: 8px;
+}
+7. Create the Strapi content type for inquiries
+Create a new content type in Strapi called "inquiry" with these fields:
+
+json
+{
+  "collectionName": "inquiries",
+  "info": {
+    "name": "inquiry",
+    "description": "Property inquiry and booking system"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "propertyId": {
+      "type": "string",
+      "required": true
+    },
+    "propertyName": {
+      "type": "string",
+      "required": true
+    },
+    "landlordId": {
+      "type": "string",
+      "required": true
+    },
+    "userId": {
+      "type": "string",
+      "required": true
+    },
+    "userName": {
+      "type": "string",
+      "required": true
+    },
+    "userEmail": {
+      "type": "email",
+      "required": true
+    },
+    "userPhone": {
+      "type": "string"
+    },
+    "message": {
+      "type": "text",
+      "required": true
+    },
+    "preferredDate": {
+      "type": "date"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["unread", "in-progress", "done"],
+      "default": "unread"
+    },
+    "landlordReply": {
+      "type": "text"
+    },
+    "counterDate": {
+      "type": "date"
+    }
+  }
+}
+This implementation provides:
+
+Student Flow: Students can book appointments, see inquiry status, and view landlord responses
+
+Landlord Flow: Landlords get notifications, can manage inquiry status, reply to students, and suggest alternative dates
+
+Real-time Communication: Both parties can see updates and communicate through the system
+
+Status Tracking: Clear status indicators (unread, in-progress, done)
+
+Notification System: Badges and visual indicators for new inquiries
+
+The system maintains a complete audit trail of all communications and status changes between students and landlords.
+
+
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const handleSignupSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+  setSuccess('');
+
+  try {
+    console.log('🚀 Starting multi-step registration...');
+
+    // STEP 1: Validate form data
+    console.log('📋 Step 1: Validating form...');
+    const validationErrors = validateSignupForm(formData);
+    if (validationErrors.length > 0) {
+      throw new Error(validationErrors.join(', '));
+    }
+
+    // STEP 2: Check if user already exists
+    console.log('🔍 Step 2: Checking existing user...');
+    const userExists = await checkUserExists(formData.signupEmail);
+    if (userExists) {
+      throw new Error('User with this email already exists');
+    }
+
+    // STEP 3: Prepare registration data
+    console.log('📦 Step 3: Preparing data...');
+    const registrationData = prepareRegistrationData(formData);
+
+    // STEP 4: Register user
+    console.log('👤 Step 4: Registering user...');
+    const registerResult = await register(registrationData);
+    if (!registerResult.success) {
+      throw new Error(registerResult.error);
+    }
+
+    // STEP 5: Create profile based on role
+    console.log('🎭 Step 5: Creating profile...');
+    let profileResult;
+    if (formData.signupRole === 'student') {
+      profileResult = await createStudentProfile(registerResult.data.user.id, formData);
+    } else {
+      profileResult = await createLandlordProfile(registerResult.data.user.id, formData);
+    }
+
+    if (!profileResult.success) {
+      throw new Error(profileResult.error);
+    }
+
+    // STEP 6: Send welcome email
+    console.log('📧 Step 6: Sending welcome email...');
+    await sendWelcomeEmail(formData.signupEmail, formData.signupFullName);
+
+    // STEP 7: Show success and cleanup
+    console.log('✅ All steps completed successfully!');
+    setSuccess('Account created successfully! Welcome to VarsityCribs!');
+    
+    // Reset form
+    resetForm();
+    
+    // Close modal after delay
+    setTimeout(() => {
+      setShowLoginModal(false);
+    }, 3000);
+
+  } catch (error) {
+    console.error('❌ Registration failed:', error);
+    setError(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Helper functions
+const validateSignupForm = (formData) => {
+  const errors = [];
+  
+  if (!formData.signupUsername?.trim()) {
+    errors.push('Username is required');
+  }
+  if (!formData.signupEmail?.trim()) {
+    errors.push('Email is required');
+  }
+  if (!formData.signupPassword) {
+    errors.push('Password is required');
+  }
+  if (formData.signupPassword.length < 6) {
+    errors.push('Password must be at least 6 characters');
+  }
+  
+  return errors;
+};
+
+const checkUserExists = async (email) => {
+  // Your API call to check if user exists
+  const result = await userService.checkEmailExists(email);
+  return result.exists;
+};
+
+const prepareRegistrationData = (formData) => {
+  return {
+    username: formData.signupUsername.trim(),
+    email: formData.signupEmail.trim().toLowerCase(),
+    password: formData.signupPassword,
+    fullName: formData.signupFullName?.trim() || formData.signupUsername.trim(),
+    phone: formData.signupPhone?.trim() || '',
+    role: formData.signupRole,
+  };
+};
+
+const createStudentProfile = async (userId, formData) => {
+  const profileData = {
+    studentId: `ST${Date.now()}`,
+    firstName: formData.signupFullName?.split(' ')[0] || formData.signupUsername,
+    lastName: formData.signupFullName?.split(' ').slice(1).join(' ') || '',
+    phoneNumber: formData.signupPhone,
+    university: formData.university || '',
+    yearOfStudy: formData.yearOfStudy || 1,
+    course: formData.course || '',
+  };
+  
+  return await profileService.createStudentProfile(userId, profileData);
+};
+
+const createLandlordProfile = async (userId, formData) => {
+  const profileData = {
+    landlordId: `LL${Date.now()}`,
+    fullName: formData.signupFullName || formData.signupUsername,
+    phoneNumber: formData.signupPhone,
+    companyName: formData.companyName || '',
+    address: formData.address || '',
+    description: formData.description || '',
+  };
+  
+  return await profileService.createLandlordProfile(userId, profileData);
+};
+
+const sendWelcomeEmail = async (email, name) => {
+  // Your email service call
+  return await emailService.sendWelcome(email, name);
+};
+
+const resetForm = () => {
+  setFormData({
+    loginIdentifier: '',
+    loginPassword: '',
+    signupUsername: '',
+    signupEmail: '',
+    signupFullName: '',
+    signupPhone: '',
+    signupPassword: '',
+    signupRole: 'student',
+    university: '',
+    studentIdNumber: '',
+    yearOfStudy: '',
+    course: '',
+    companyName: '',
+    address: '',
+    description: '',
+    forgotEmail: ''
+  });
+};
+
+
+
+
+
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    // Always validate
+    await validateForm(formData);
+    
+    // Conditionally call functions based on form data
+    if (formData.newsletter) {
+      await subscribeToNewsletter(formData.email);
+    }
+    
+    if (formData.role === 'landlord' && formData.companyName) {
+      await verifyBusiness(formData.companyName);
+    }
+    
+    // Main submission
+    const result = await submitMainForm(formData);
+    
+    // Post-submission actions
+    if (result.success) {
+      await trackAnalytics('form_submission');
+      await showSuccessNotification();
+    }
+    
+  } catch (error) {
+    setError(error.message);
+  } finally {
+    setLoading(false);
+  }
+};

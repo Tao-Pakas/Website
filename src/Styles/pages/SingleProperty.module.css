@@ -5,20 +5,25 @@
   --background-color: #F2F0ED;
   --text-color: #333333;
   --text-light: #666666;
- --white: #FFFFFF;
+  --white: #FFFFFF;
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
   --border-radius: 12px;
   --transition: all 0.3s ease;
   --gradient-primary: linear-gradient(135deg, #604D3C 0%, #8a7f6d 100%);
   --gradient-secondary: linear-gradient(135deg, #9DACB2 0%, #b8c7cd 100%);
+  --success-color: #27ae60;
+  --disabled-color: #95a5a6;
 }
 
 .SinglePropertyBody {
   min-height: 100vh;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  padding: 6% 0;
+  padding: 2rem 0;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /* ===== LOADING AND ERROR STATES ===== */
@@ -32,12 +37,13 @@
   padding: 2rem;
   flex-direction: column;
   gap: 1rem;
+  width: 95%;
+  margin: 0 auto;
 }
 
 .loading {
   color: var(--primary-color);
   background: var(--white);
-  margin: 2rem;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
 }
@@ -47,14 +53,16 @@
   background: rgba(220, 53, 69, 0.05);
   border: 1px solid rgba(220, 53, 69, 0.2);
   border-radius: var(--border-radius);
-  margin: 2rem;
 }
 
 /* ===== IMAGE GALLERY ===== */
 .ImageGallery {
   padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 95%;
+  margin: 0 auto 2rem;
+  background: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
 }
 
 .MainImage {
@@ -134,7 +142,7 @@
 /* ===== PROPERTY DETAILS ===== */
 .Details {
   padding: 3rem 2rem;
-  max-width: 1400px;
+  width: 95%;
   margin: 0 auto 2rem;
   background: var(--white);
   border-radius: var(--border-radius);
@@ -201,6 +209,33 @@
   filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.3));
 }
 
+.LikesCount {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.LikesCount svg {
+  color: #3498db;
+}
+
+.LandlordInfo {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--background-color);
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--primary-color);
+}
+
+.LandlordInfo small {
+  display: block;
+  color: var(--text-light);
+  margin-bottom: 0.25rem;
+}
+
 .HeaderRight {
   text-align: right;
   display: flex;
@@ -239,11 +274,17 @@
   box-shadow: var(--shadow);
 }
 
-.IconButton:hover {
+.IconButton:hover:not(:disabled) {
   background: var(--accent-color);
   border-color: var(--primary-color);
   transform: scale(1.1) translateY(-2px);
   box-shadow: var(--shadow-hover);
+}
+
+.IconButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* ===== DETAILS GRID ===== */
@@ -352,7 +393,7 @@
   border: 2px solid #f1b0b7;
 }
 
-/* ===== FACILITIES ===== */
+/* ===== FACILITIES - IMPROVED STYLING ===== */
 .FacilitiesGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -367,25 +408,91 @@
   background: var(--background-color);
   border-radius: var(--border-radius);
   transition: var(--transition);
-  border: 1px solid transparent;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
 }
 
-.Facility:hover {
-  background: var(--white);
-  border-color: var(--primary-color);
+/* Available Facility */
+.Facility.available {
+  background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+  border-color: #c3e6cb;
+  border-left: 4px solid var(--success-color);
+}
+
+.Facility.available:hover {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
   transform: translateY(-3px);
   box-shadow: var(--shadow-hover);
 }
 
+.Facility.available svg {
+  color: var(--success-color);
+}
+
+.Facility.available span {
+  color: #155724;
+  font-weight: 600;
+}
+
+/* Unavailable Facility */
+.Facility.unavailable {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-color: #dee2e6;
+  border-left: 4px solid var(--disabled-color);
+  opacity: 0.7;
+}
+
+.Facility.unavailable svg {
+  color: var(--disabled-color);
+}
+
+.Facility.unavailable span {
+  color: var(--disabled-color);
+  text-decoration: line-through;
+}
+
+/* Facility hover effects */
+.Facility.available:hover::before {
+  content: '✓ Available';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: var(--success-color);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.Facility.unavailable:hover::before {
+  content: '✗ Not Available';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: var(--disabled-color);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
 .Facility svg {
-  color: var(--primary-color);
   font-size: 1.3rem;
   flex-shrink: 0;
+  transition: var(--transition);
+}
+
+.Facility.available:hover svg {
+  transform: scale(1.2);
 }
 
 .Facility span {
   font-weight: 500;
   color: var(--text-color);
+  transition: var(--transition);
 }
 
 /* ===== CONTACT & BOOKING ===== */
@@ -409,6 +516,25 @@
 .ContactInfo p {
   color: var(--text-light);
   line-height: 1.6;
+}
+
+.LandlordContact {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--primary-color);
+}
+
+.LandlordContact h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.LandlordContact p {
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
 }
 
 .BookButton {
@@ -442,8 +568,8 @@
 
 /* ===== ROOMS SECTION ===== */
 .Rooms {
-  padding: 4rem 2rem;
-  max-width: 1400px;
+  padding: 3rem 2rem;
+  width: 95%;
   margin: 0 auto 2rem;
   background: var(--white);
   border-radius: var(--border-radius);
@@ -473,7 +599,7 @@
 
 .RoomsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
 }
 
@@ -481,7 +607,7 @@
   border-radius: var(--border-radius);
   overflow: hidden;
   box-shadow: var(--shadow-hover);
-  height: 280px;
+  height: 250px;
   position: relative;
   background: var(--accent-color);
 }
@@ -515,10 +641,10 @@
 
 /* ===== VIDEO CONTAINER ===== */
 .VideoContainer {
-  padding: 4rem 2rem;
+  padding: 3rem 2rem;
   background: var(--white);
   margin: 2rem auto;
-  max-width: 1400px;
+  width: 95%;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-hover);
   text-align: center;
@@ -547,7 +673,7 @@
 .VideoPlaceholder {
   background: linear-gradient(135deg, var(--background-color) 0%, var(--accent-color) 100%);
   border-radius: var(--border-radius);
-  padding: 4rem 2rem;
+  padding: 3rem 2rem;
   border: 2px dashed var(--primary-color);
 }
 
@@ -581,8 +707,8 @@
 
 /* ===== CONTACT INFORMATION ===== */
 .SinglePropertyContactInfo {
-  padding: 4rem 2rem;
-  max-width: 1400px;
+  padding: 3rem 2rem;
+  width: 95%;
   margin: 0 auto;
 }
 
@@ -765,6 +891,38 @@
   min-height: 120px;
 }
 
+.errorInput {
+  border-color: #dc3545 !important;
+}
+
+.errorMessage {
+  color: #dc3545;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+.phoneHint {
+  color: var(--text-light);
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.UserInfo {
+  background: #e8f5e8;
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 2rem;
+  border-left: 4px solid var(--success-color);
+}
+
+.UserInfo p {
+  margin: 0.5rem 0;
+  color: var(--text-color);
+  font-size: 0.95rem;
+}
+
 .ModalActions {
   display: flex;
   gap: 1.5rem;
@@ -803,10 +961,30 @@
   box-shadow: var(--shadow);
 }
 
-.SubmitButton:hover {
+.SubmitButton:hover:not(:disabled) {
   background: var(--gradient-secondary);
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
+}
+
+.SubmitButton:disabled {
+  background: var(--disabled-color);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Success Message */
+.successMessage {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--success-color);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-hover);
+  z-index: 1001;
+  animation: slideIn 0.3s ease;
 }
 
 /* Login Required Styles */
@@ -928,67 +1106,48 @@
 .AuthBadge {
   background: linear-gradient(135deg, #27ae60, #2ecc71);
   color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  display: inline-flex;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin: 0 auto 2rem;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 1rem;
+  font-weight: 600;
+  width: 95%;
+  max-width: 1400px;
 }
 
 .AuthStatus {
   background: rgba(255, 255, 255, 0.2);
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.8rem;
-}
-
-/* User Info in Booking Modal */
-.UserInfo {
-  background: #e8f5e8;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  border-left: 4px solid #27ae60;
-}
-
-.UserInfo p {
-  margin: 0;
-  color: #2c3e50;
+  padding: 4px 12px;
+  border-radius: 20px;
   font-size: 0.9rem;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .LoginPrompt {
-    padding: 2rem 1.5rem;
-    margin: 1rem;
-  }
+.UserRole, .OwnerBadge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
 
-  .LoginActions {
-    flex-direction: column;
-  }
+.OwnerBadge {
+  background: rgba(255, 193, 7, 0.3);
+}
 
-  .LoginButton, .BackButton {
-    width: 100%;
-    justify-content: center;
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
   }
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 1200px) {
-  .ImageGallery,
-  .Details,
-  .Rooms,
-  .VideoContainer,
-  .SinglePropertyContactInfo {
-    max-width: 1000px;
-  }
-}
-
-@media (max-width: 1024px) {
   .DetailsGrid {
     grid-template-columns: 1fr 1fr;
   }
@@ -996,19 +1155,30 @@
   .addresses {
     grid-column: 1 / -1;
   }
-  
+}
+
+@media (max-width: 1024px) {
   .Features {
+    grid-template-columns: 1fr;
+  }
+  
+  .FacilitiesGrid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
+  .SinglePropertyBody {
+    padding: 1rem 0;
+  }
+
   .ImageGallery,
   .Details,
   .Rooms,
   .VideoContainer,
   .SinglePropertyContactInfo {
     padding: 1.5rem;
+    width: 98%;
   }
 
   .PropertyHeader {
@@ -1030,10 +1200,6 @@
   .DetailsGrid {
     grid-template-columns: 1fr;
     gap: 2rem;
-  }
-
-  .FacilitiesGrid {
-    grid-template-columns: 1fr;
   }
 
   .MainImage {
@@ -1064,15 +1230,26 @@
   .ModalActions {
     flex-direction: column;
   }
+
+  .AuthBadge {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
   .ImageGallery,
   .Details,
   .Rooms,
   .VideoContainer,
   .SinglePropertyContactInfo {
+    width: 98%;
     padding: 1rem;
+  }
+
+  .MainImage {
+    height: 250px;
   }
 
   .HeaderLeft h1 {
@@ -1095,12 +1272,8 @@
     height: 70px;
   }
 
-  .MainImage {
-    height: 250px;
-  }
-
   .RoomImage {
-    height: 220px;
+    height: 200px;
   }
 
   .ContactCard {
@@ -1109,6 +1282,7 @@
 
   .Modal {
     padding: 1.5rem 1rem;
+    margin: 1rem;
   }
 
   .BookButton,
@@ -1116,6 +1290,37 @@
   .ContactButton {
     padding: 1.25rem 1.5rem;
     font-size: 1rem;
+  }
+
+  .FacilitiesGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .HeaderLeft h1 {
+    font-size: 1.5rem;
+  }
+
+  .Price {
+    font-size: 1.5rem;
+  }
+
+  .ActionButtons {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .Features {
+    grid-template-columns: 1fr;
+  }
+
+  .LoginPrompt {
+    padding: 2rem 1rem;
+  }
+
+  .LoginActions {
+    flex-direction: column;
   }
 }
 
@@ -1153,5 +1358,7 @@
     --background-color: #ffffff;
     --text-color: #000000;
     --text-light: #333333;
+    --success-color: #006400;
+    --disabled-color: #696969;
   }
 }

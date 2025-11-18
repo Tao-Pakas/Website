@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import style from '../../Styles/components/Nav.module.css';
 import { 
   FaHeart, 
@@ -14,21 +14,25 @@ import {
   FaTachometerAlt,
   FaUser,
   FaSignInAlt,
-  FaExclamationCircle
+  FaExclamationCircle,
+  FaHome,
+  FaBuilding,
+  FaEnvelope
 } from 'react-icons/fa';
-import { useApp } from '../../Contexts/AppContext';
+import { useAuth } from '../../Contexts/AuthContext';
 
 export default function Navbar() {
   const { 
-    favorites, 
-    bookmarks, 
-    shortlist, 
     user, 
     login, 
     register, 
-    forgotPassword, 
-    logout 
-  } = useApp();
+    logout,
+    forgotPassword,
+    loading: authLoading,
+    error: authError 
+  } = useAuth();
+  
+  const navigate = useNavigate();
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -45,13 +49,37 @@ export default function Navbar() {
     signupUsername: '',
     signupEmail: '',
     signupFullName: '',
+    signupPhone: '',
     signupPassword: '',
+    signupRole: 'student',
+    
+    firstName: '',      
+    lastName: '',      
+    university: '',  
+    studentIdNumber: '',
+    yearOfStudy: '', 
+    course: '', 
+    
+    companyName: '',
+    address: '',
+    description: '',
+    
     forgotEmail: ''
   });
 
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const loginModalRef = useRef(null);
+
+  // DEBUG: Log user data to troubleshoot role detection
+  useEffect(() => {
+    console.log('=== NAVBAR USER DEBUG ===');
+    console.log('User object:', user);
+    console.log('User role field:', user?.role);
+    console.log('User role name:', user?.role?.name);
+    console.log('User ID:', user?.id);
+    console.log('=====================');
+  }, [user]);
 
   // Clear messages when switching tabs
   useEffect(() => {
@@ -78,22 +106,33 @@ export default function Navbar() {
     setSuccess('');
   };
 
-  // Close login modal and reset form
-  const handleCloseLogin = () => {
-    setShowLoginModal(false);
-    setActiveTab('login');
-    setError('');
-    setSuccess('');
-    setFormData({
-      loginIdentifier: '',
-      loginPassword: '',
-      signupUsername: '',
-      signupEmail: '',
-      signupFullName: '',
-      signupPassword: '',
-      forgotEmail: ''
-    });
-  };
+  // Close login modal and reset form - ADD ALL THE NEW FIELDS
+const handleCloseLogin = () => {
+  setShowLoginModal(false);
+  setActiveTab('login');
+  setError('');
+  setSuccess('');
+  setFormData({
+    loginIdentifier: '',
+    loginPassword: '',
+    signupUsername: '',
+    signupEmail: '',
+    signupFullName: '',
+    signupPhone: '',
+    signupPassword: '',
+    signupRole: 'student',
+    firstName: '',
+    lastName: '',
+    university: '',
+    studentIdNumber: '',
+    yearOfStudy: '',
+    course: '',
+    companyName: '',
+    address: '',
+    description: '',
+    forgotEmail: ''
+  });
+};
 
   // Handle input changes for all forms
   const handleInputChange = (field, value) => {
@@ -110,9 +149,17 @@ export default function Navbar() {
     setError('');
 
     try {
+      console.log('🔐 Attempting login with:', { identifier: formData.loginIdentifier });
+      
+      if (!login || typeof login !== 'function') {
+        throw new Error('Login function is not available');
+      }
+
       const result = await login(formData.loginIdentifier, formData.loginPassword);
       
       if (result.success) {
+        console.log('✅ Login successful');
+        console.log('Logged in user:', result.data?.user);
         setShowLoginModal(false);
         setSuccess('Login successful!');
         
@@ -122,51 +169,128 @@ export default function Navbar() {
           loginIdentifier: '',
           loginPassword: ''
         }));
+        
+        // Refresh the page to update UI
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
-        setError(result.error);
+        console.log('❌ Login failed:', result.error);
+        setError(result.error || 'Login failed');
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setError('Login failed. Please try again.');
+      console.error('🚨 Login error:', error);
+      setError(error.message || 'An error occurred during login');
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle signup form submission
-  // In your Navbar component - handleSignupSubmit function
-const handleSignupSubmit = async (e) => {
+ const handleSignupSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
   setError('');
+  setSuccess('');
 
   try {
-    const result = await register({
-      username: formData.signupUsername,
-      email: formData.signupEmail,
+    console.log('🔍 FORM DATA DEBUG:', formData);
+
+    // Enhanced validation
+    if (!formData.signupUsername?.trim()) {
+      throw new Error('Username is required');
+    }
+    if (!formData.signupEmail?.trim()) {
+      throw new Error('Email is required');
+    }
+    if (!formData.signupPassword) {
+      throw new Error('Password is required');
+    }
+    if (formData.signupPassword.length < 6) {
+      throw new Error('Password must be at least 6 characters long');
+    }
+
+    // Validate role-specific required fields
+    if (formData.signupRole === 'student') {
+      if (!formData.firstName?.trim() || !formData.lastName?.trim()) {
+        throw new Error('First name and last name are required for students');
+      }
+    } else {
+      if (!formData.signupFullName?.trim()) {
+        throw new Error('Full name is required for landlords');
+      }
+    }
+
+    // Prepare registration data - USE THE CORRECT FIELDS
+    const registrationData = {
+      username: formData.signupUsername.trim(),
+      email: formData.signupEmail.trim().toLowerCase(),
       password: formData.signupPassword,
-      // Remove fullName if not in your Strapi user model
-      // fullName: formData.signupFullName,
-    });
+      phone: formData.signupPhone?.trim() || '',
+      role: formData.signupRole,
+    };
+
+    // Add role-specific data - USE THE CORRECT FIELD NAMES
+    if (formData.signupRole === 'student') {
+      registrationData.firstName = formData.firstName.trim();
+      registrationData.lastName = formData.lastName.trim();
+      registrationData.university = formData.university || '';
+      registrationData.studentIdNumber = formData.studentIdNumber || '';
+      registrationData.yearOfStudy = formData.yearOfStudy ? parseInt(formData.yearOfStudy) : 1;
+      registrationData.course = formData.course || '';
+    } else {
+      registrationData.fullName = formData.signupFullName.trim();
+      registrationData.companyName = formData.companyName?.trim() || '';
+      registrationData.address = formData.address?.trim() || '';
+      registrationData.description = formData.description || '';
+    }
+
+    console.log('📤 Sending registration data to AuthContext:', registrationData);
+
+    // Call the register function from AuthContext
+    const result = await register(registrationData);
+    console.log('📥 Registration result from AuthContext:', result);
 
     if (result.success) {
-      setShowLoginModal(false);
-      setSuccess('Account created successfully!');
+      console.log('✅ Registration successful in handleSignupSubmit');
+      
+      // Show success message
+      setSuccess(`Account created successfully! Welcome to VarsityCribs!`);
       
       // Reset form
-      setFormData(prev => ({
-        ...prev,
+      setFormData({
+        loginIdentifier: '',
+        loginPassword: '',
         signupUsername: '',
         signupEmail: '',
-        signupFullName: '', // Keep if you want to store locally
-        signupPassword: ''
-      }));
+        signupFullName: '',
+        signupPhone: '',
+        signupPassword: '',
+        signupRole: 'student',
+        firstName: '',
+        lastName: '',
+        university: '',
+        studentIdNumber: '',
+        yearOfStudy: '',
+        course: '',
+        companyName: '',
+        address: '',
+        description: '',
+        forgotEmail: ''
+      });
+      
+      // Close modal after a short delay to show success message
+      setTimeout(() => {
+        setShowLoginModal(false);
+        console.log('🚪 Modal closed after successful registration');
+      }, 2000);
+      
     } else {
-      setError(result.error);
+      console.log('❌ Registration failed in handleSignupSubmit:', result.error);
+      setError(result.error || 'Registration failed. Please try again.');
     }
   } catch (error) {
-    console.error('Signup error:', error);
-    setError('Registration failed. Please try again.');
+    console.error('🚨 Signup error in handleSignupSubmit:', error);
+    setError(error.message || 'Registration failed. Please try again.');
   } finally {
     setLoading(false);
   }
@@ -201,12 +325,68 @@ const handleSignupSubmit = async (e) => {
 
   // Handle logout
   const handleLogout = () => {
+    console.log('🚪 Logging out user');
     logout();
     setIsDropdownOpen(false);
     setIsMobileMenuOpen(false);
     setSuccess('Logged out successfully!');
+    navigate('/');
   };
 
+ // FIXED: Improved role detection in Navbar.jsx
+// Update the role detection functions:
+
+// FIXED: Improved role detection function - Handle role OBJECT properly
+const getUserRole = () => {
+  if (!user) return null;
+  
+  console.log('Role detection - user.role:', user.role);
+  
+  // Handle case where role is an object with name property (from populated query)
+  if (user.role && typeof user.role === 'object' && user.role.name) {
+    return user.role.name;
+  }
+  
+  // Handle case where role is a string
+  if (typeof user.role === 'string') {
+    return user.role;
+  }
+  
+  // Check for profile existence as fallback
+  if (user.landlord) return 'landlord';
+  if (user.student) return 'student';
+  
+  return null;
+};
+
+// FIXED: Get appropriate dashboard link based on role
+const getDashboardLink = () => {
+  const role = getUserRole();
+  console.log('Dashboard link for role:', role);
+  
+  if (role === 'landlord' || user?.landlord) {
+    return '/LandlordDash';
+  } else if (role === 'student' || user?.student) {
+    return '/DashBoard';
+  }
+  
+  return '/DashBoard'; // Default fallback
+};
+
+// FIXED: Get role display text - Handle role object properly
+const getRoleDisplay = () => {
+  const role = getUserRole();
+  console.log('Role display for:', role);
+  
+  if (role === 'landlord' || user?.landlord) return '🏠 Landlord';
+  if (role === 'student' || user?.student) return '🎓 Student';
+  if (role === 'authenticated') return '👤 User';
+  if (role === 'public') return '👤 Public';
+  
+  return '👤 User'; // Fallback
+};
+
+ 
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -291,7 +471,7 @@ const handleSignupSubmit = async (e) => {
             </button>
           ) : (
             <div className={style.userWelcome}>
-              Welcome, {user.name}
+              Welcome, {user.username || user.email}
             </div>
           )}
 
@@ -309,29 +489,56 @@ const handleSignupSubmit = async (e) => {
             {isDropdownOpen && (
               <div className={style.dropdownMenu}>
                 {user ? (
-                  // User is logged in
+                  // User is logged in - FIXED with proper role object handling
                   <>
                     <div className={style.userInfo}>
                       <FaUser className={style.userIcon} />
                       <div>
-                        <div className={style.userName}>{user.name}</div>
-                        <div className={style.userEmail}>{user.email}</div>
+                        <div className={style.userName}>{user.username || user.email}</div>
+                        <div className={style.userRole}>
+                          <span className={`${style.roleBadge} ${style[getUserRole()]}`}>
+                            {getRoleDisplay()}
+                          </span>
+                        </div>
+                        
                       </div>
                     </div>
                     <div className={style.dropdownDivider}></div>
+                    
+                    {/* Dynamic Dashboard Link based on Role */}
                     <Link 
-                      to="/Favourites" 
-                      className={style.dropdownItem}
+                      to={getDashboardLink()} 
+                      className={`${style.dropdownItem} ${style.dashboardLink}`}
                       onClick={() => {
                         setIsDropdownOpen(false);
                         setIsMobileMenuOpen(false);
                       }}
                     >
-                      <FaHeart className={style.dropdownIcon} />
-                      <span className={style.dropdownText}>Favorites</span>
-                      <span className={style.count}>{favorites?.favoriteCount || 0}</span>
+                      {getUserRole() === 'landlord' ? (
+                        <FaBuilding className={style.dropdownIcon} />
+                      ) : (
+                        <FaHome className={style.dropdownIcon} />
+                      )}
+                      <span className={style.dropdownText}>
+                        {getUserRole() === 'landlord' ? 'Landlord Dashboard' : 'Student Dashboard'}
+                      </span>
                     </Link>
-                    
+
+                    {/* Shortlist link - only show for students */}
+                    {getUserRole() === 'student' && (
+                      <Link 
+                        to="/SavedPage" 
+                        className={style.dropdownItem}
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <FaShoppingCart className={style.dropdownIcon} />
+                        <span className={style.dropdownText}>Shortlist</span>
+                      </Link>
+                    )}
+
                     <Link 
                       to="/SavedPage" 
                       className={style.dropdownItem}
@@ -342,7 +549,6 @@ const handleSignupSubmit = async (e) => {
                     >
                       <FaShoppingCart className={style.dropdownIcon} />
                       <span className={style.dropdownText}>Shortlist</span>
-                      <span className={style.count}>{shortlist?.shortlistCount || 0}</span>
                     </Link>
 
                     <Link 
@@ -355,18 +561,6 @@ const handleSignupSubmit = async (e) => {
                     >
                       <FaCog className={style.dropdownIcon} />
                       <span className={style.dropdownText}>Settings</span>
-                    </Link>
-
-                    <Link 
-                      to="/DashBoard" 
-                      className={style.dropdownItem}
-                      onClick={() => {
-                        setIsDropdownOpen(false);
-                        setIsMobileMenuOpen(false);
-                      }}
-                    >
-                      <FaTachometerAlt className={style.dropdownIcon} />
-                      <span className={style.dropdownText}>Dashboard</span>
                     </Link>
                     
                     <div className={style.dropdownDivider}></div>
@@ -391,19 +585,6 @@ const handleSignupSubmit = async (e) => {
                     </button>
                     
                     <Link 
-                      to="/Favourites" 
-                      className={style.dropdownItem}
-                      onClick={() => {
-                        setIsDropdownOpen(false);
-                        setIsMobileMenuOpen(false);
-                      }}
-                    >
-                      <FaHeart className={style.dropdownIcon} />
-                      <span className={style.dropdownText}>Favorites</span>
-                      <span className={style.count}>{favorites?.favoriteCount || 0}</span>
-                    </Link>
-                    
-                    <Link 
                       to="/SavedPage" 
                       className={style.dropdownItem}
                       onClick={() => {
@@ -413,7 +594,6 @@ const handleSignupSubmit = async (e) => {
                     >
                       <FaShoppingCart className={style.dropdownIcon} />
                       <span className={style.dropdownText}>Shortlist</span>
-                      <span className={style.count}>{shortlist?.shortlistCount || 0}</span>
                     </Link>
                   </>
                 )}
@@ -456,7 +636,7 @@ const handleSignupSubmit = async (e) => {
               </div>
             )}
             
-            {/* === Login Form === */}
+            {/* Login Form */}
             {activeTab === 'login' && (
               <form onSubmit={handleLoginSubmit} className={style.loginForm}>
                 <div className={style.formGroup}>
@@ -509,73 +689,178 @@ const handleSignupSubmit = async (e) => {
               </form>
             )}
 
-            {/* === Signup Form === */}
-            {activeTab === 'signup' && (
-              <form onSubmit={handleSignupSubmit} className={style.loginForm}>
-                <div className={style.formGroup}>
-                  <label htmlFor="signupUsername">Username</label>
-                  <input
-                    type="text"
-                    id="signupUsername"
-                    value={formData.signupUsername}
-                    onChange={(e) => handleInputChange('signupUsername', e.target.value)}
-                    placeholder="Enter your username"
-                    required
-                    disabled={loading}
-                  />
-                </div>
-                
-                <div className={style.formGroup}>
-                  <label htmlFor="signupEmail">Email</label>
-                  <input
-                    type="email"
-                    id="signupEmail"
-                    value={formData.signupEmail}
-                    onChange={(e) => handleInputChange('signupEmail', e.target.value)}
-                    placeholder="Enter your email"
-                    required
-                    disabled={loading}
-                  />
-                </div>
-                
-                <div className={style.formGroup}>
-                  <label htmlFor="signupFullName">Full Name</label>
-                  <input
-                    type="text"
-                    id="signupFullName"
-                    value={formData.signupFullName}
-                    onChange={(e) => handleInputChange('signupFullName', e.target.value)}
-                    placeholder="Enter your full name"
-                    required
-                    disabled={loading}
-                  />
-                </div>
-                
-                <div className={style.formGroup}>
-                  <label htmlFor="signupPassword">Password</label>
-                  <input
-                    type="password"
-                    id="signupPassword"
-                    value={formData.signupPassword}
-                    onChange={(e) => handleInputChange('signupPassword', e.target.value)}
-                    placeholder="Enter password (min. 6 characters)"
-                    required
-                    minLength="6"
-                    disabled={loading}
-                  />
-                </div>
-                
-                <button 
-                  type="submit" 
-                  className={style.submitButton}
-                  disabled={loading}
-                >
-                  {loading ? 'Creating Account...' : 'Create Account'}
-                </button>
-              </form>
-            )}
+{/* Signup Form */}
+{activeTab === 'signup' && (
+  <form onSubmit={handleSignupSubmit} className={style.loginForm}>
+    <div className={style.formGroup}>
+      <label htmlFor="signupUsername">Username *</label>
+      <input
+        type="text"
+        id="signupUsername"
+        value={formData.signupUsername}
+        onChange={(e) => handleInputChange('signupUsername', e.target.value)}
+        placeholder="Enter your username"
+        required
+        disabled={loading}
+      />
+    </div>
+    
+    <div className={style.formGroup}>
+      <label htmlFor="signupEmail">Email *</label>
+      <input
+        type="email"
+        id="signupEmail"
+        value={formData.signupEmail}
+        onChange={(e) => handleInputChange('signupEmail', e.target.value)}
+        placeholder="Enter your email"
+        required
+        disabled={loading}
+      />
+    </div>
+    
+    {/* Conditional Name Fields */}
+    {formData.signupRole === 'student' ? (
+      <>
+        <div className={style.formGroup}>
+          <label htmlFor="firstName">First Name *</label>
+          <input
+            type="text"
+            id="firstName"
+            value={formData.firstName}
+            onChange={(e) => handleInputChange('firstName', e.target.value)}
+            placeholder="Your first name"
+            required
+            disabled={loading}
+          />
+        </div>
+        
+        <div className={style.formGroup}>
+          <label htmlFor="lastName">Last Name *</label>
+          <input
+            type="text"
+            id="lastName"
+            value={formData.lastName}
+            onChange={(e) => handleInputChange('lastName', e.target.value)}
+            placeholder="Your last name"
+            required
+            disabled={loading}
+          />
+        </div>
+      </>
+    ) : (
+      <div className={style.formGroup}>
+        <label htmlFor="signupFullName">Full Name *</label>
+        <input
+          type="text"
+          id="signupFullName"
+          value={formData.signupFullName}
+          onChange={(e) => handleInputChange('signupFullName', e.target.value)}
+          placeholder="Your full name"
+          required
+          disabled={loading}
+        />
+      </div>
+    )}
+    
+<div className={style.formGroup}>
+  <label htmlFor="signupPhone">Phone Number *</label>
+  <input
+    type="tel"
+    id="signupPhone"
+    value={formData.signupPhone}
+    onChange={(e) => {
+      // Only allow numbers
+      const numbersOnly = e.target.value.replace(/[^\d]/g, '');
+      handleInputChange('signupPhone', numbersOnly);
+    }}
+    placeholder="263771234567" // No + sign
+    required
+    disabled={loading}
+    pattern="[0-9]*" // Only numbers
+    inputMode="numeric" // Numeric keyboard on mobile
+  />
+  <small style={{color: '#666', fontSize: '12px'}}>
+    Enter numbers only (no + sign or spaces)
+  </small>
+</div>
+    
+    {/* Landlord-specific fields */}
+    {formData.signupRole === 'landlord' && (
+      <>
+        <div className={style.formGroup}>
+          <label htmlFor="companyName">Company Name</label>
+          <input
+            type="text"
+            id="companyName"
+            value={formData.companyName}
+            onChange={(e) => handleInputChange('companyName', e.target.value)}
+            placeholder="Your company or property business name"
+            disabled={loading}
+          />
+        </div>
+        
+        <div className={style.formGroup}>
+          <label htmlFor="address">Business Address</label>
+          <input
+            type="text"
+            id="address"
+            value={formData.address}
+            onChange={(e) => handleInputChange('address', e.target.value)}
+            placeholder="Your business address"
+            disabled={loading}
+          />
+        </div>
+        
+      </>
+    )}
+    
+    <div className={style.formGroup}>
+      <label htmlFor="signupRole">I am a *</label>
+      <select
+        id="signupRole"
+        value={formData.signupRole}
+        onChange={(e) => handleInputChange('signupRole', e.target.value)}
+        required
+        disabled={loading}
+        className={style.roleSelect}
+      >
+        <option value="student">🎓 Student (Looking for accommodation)</option>
+        <option value="landlord">🏠 Landlord (Listing properties)</option>
+      </select>
+    </div>
+    
+    <div className={style.formGroup}>
+      <label htmlFor="signupPassword">Password *</label>
+      <input
+        type="password"
+        id="signupPassword"
+        value={formData.signupPassword}
+        onChange={(e) => handleInputChange('signupPassword', e.target.value)}
+        placeholder="Enter password (min. 6 characters)"
+        required
+        minLength="6"
+        disabled={loading}
+      />
+    </div>
+    
+    <button 
+      type="submit" 
+      className={style.submitButton}
+      disabled={loading}
+    >
+      {loading ? (
+        <>
+          <span className={style.loadingSpinner}></span>
+          Creating Account...
+        </>
+      ) : (
+        'Create Account'
+      )}
+    </button>
+  </form>
+)}
 
-            {/* === Forgot Password Form === */}
+            {/* Forgot Password Form */}
             {activeTab === 'forgot' && (
               <form onSubmit={handleForgotPasswordSubmit} className={style.loginForm}>
                 <div className={style.formGroup}>

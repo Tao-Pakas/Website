@@ -8,24 +8,24 @@ export const GET_PROPERTY_DETAILS = gql`
       location {
         Address
         City
-        longitude
         latitude
+        longitude
       }
       details {
-        price
-        Bedrooms
         Bathrooms
-        isFull
+        Bedrooms
+        price
         Category
         Type
         distance
+        isFull
         Facilities {
-          wifi
-          solar
-          gas
-          security
           kitchen
           SwimmingPool
+          gas
+          security
+          solar
+          wifi
         }
       }
       media {
@@ -41,11 +41,20 @@ export const GET_PROPERTY_DETAILS = gql`
           url
           alternativeText
         }
-        ShowCase {
-          url
-          alternativeText
+      }
+      # 🔥 CRITICAL: Added proper landlord fields
+      landlord {
+        documentId
+        fullName
+        landlordId
+        phoneNumber
+        users_permissions_user {
+          email
+          username
         }
       }
+      likes
+      createdAt
     }
   }
 `;

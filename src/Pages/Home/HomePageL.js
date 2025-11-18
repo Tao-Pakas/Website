@@ -21,48 +21,6 @@ export const Home_Page_Data = gql`
                 heading
                 Paragraph
             }
-            ... on ComponentListingsFeaturedProperty {
-                id
-                summary
-                Location {
-                id
-                Address
-                City
-                longitude
-                latitude
-                }
-                Media {
-                id
-                CoverImage {
-                alternativeText
-                url 
-                }
-                Gallery_connection {
-                    nodes {
-                    alternativeText
-                    url
-                    }
-                }
-                Gallery {
-                    alternativeText
-                    url
-                }
-                Rooms_connection {
-                    nodes {
-                    alternativeText
-                    url
-                    }
-                }
-                Rooms {
-                    alternativeText
-                    url
-                }
-                ShowCase {
-                    alternativeText
-                    url
-                }
-                }
-            }
             ... on ComponentBlocksPopularProperties {
                 id
                 heding

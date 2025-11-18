@@ -2,15 +2,23 @@ import style from '../../Styles/pages/Accommodations.module.css';
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from "@apollo/client/react";
-import {FaHeart, FaRegHeart, FaShoppingCart,FaCartPlus, FaSignInAlt, FaLock} from 'react-icons/fa';
-import { GET_ACCOMMODATIONS_DETAILS } from './Accommodations';
+import { FaShoppingCart, FaCartPlus, FaSignInAlt, FaLock } from 'react-icons/fa';
+import { GET_ACCOMMODATIONS_DETAILS } from '../../graphql/getAccommodationsDetails';
 import { useApp } from '../../Contexts/AppContext';
+import { useAuth } from '../../Contexts/AuthContext';
 
 export default function Accommodations() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(1000); // Set high to get all data
+  const [pageSize, setPageSize] = useState(1000);
   const navigate = useNavigate();
-  const { user, toggleFavorite, toggleShortlist, isFavorite, isInShortlist } = useApp();
+
+  const { user, getUserRole } = useAuth();
+  
+  const { 
+    addToShortlist, 
+    removeFromShortlist, 
+    isInShortlist
+  } = useApp();
 
   const { loading, error, data } = useQuery(GET_ACCOMMODATIONS_DETAILS, {
     variables: {
@@ -186,42 +194,25 @@ export default function Accommodations() {
 
   // Change page size to get more items at once
   const increasePageSize = () => {
-    setPageSize(5000); // Set even higher to ensure we get all data
+    setPageSize(5000);
     setCurrentPage(1);
   };
 
-  // Handle login requirement for actions
+  // FIXED: Handle login requirement for actions with role check
   const requireLogin = (actionType, accommodation) => {
     if (!user) {
       setShowLoginPrompt(true);
       return false;
     }
+    
+    // Additional role-based checks if needed
+    const userRole = getUserRole();
+    if (actionType === 'shortlist' && userRole === 'landlord') {
+      // Landlords might have different permissions
+      console.log('Landlord performing student action:', actionType);
+    }
+    
     return true;
-  };
-
-  // Favorite handler
-  const handleFavorite = (accommodation) => {
-    if (!requireLogin('favorite', accommodation)) return;
-    
-    const property = {
-      id: accommodation.documentId,
-      name: accommodation.location?.Address,
-      type: 'accommodation',
-      details: accommodation.details,
-      location: accommodation.location,
-      media: accommodation.media
-    };
-    
-    const wasFavorite = isFavorite(accommodation.documentId);
-    toggleFavorite(property);
-    
-    setRecentAction({
-      type: 'favorite',
-      propertyId: accommodation.documentId,
-      propertyName: accommodation.location?.Address,
-      isAdded: !wasFavorite
-    });
-    setTimeout(() => setRecentAction(null), 3000);
   };
 
   const handleShortlist = (accommodation) => {
@@ -237,7 +228,12 @@ export default function Accommodations() {
     };
     
     const wasInShortlist = isInShortlist(accommodation.documentId);
-    toggleShortlist(property);
+    
+    if (wasInShortlist) {
+      removeFromShortlist(accommodation.documentId);
+    } else {
+      addToShortlist(property);
+    }
     
     setRecentAction({
       type: 'shortlist',
@@ -251,7 +247,7 @@ export default function Accommodations() {
   // Handle login navigation
   const handleLoginClick = () => {
     setShowLoginPrompt(false);
-    navigate('/login'); // Or use your login modal logic
+    navigate('/login');
   };
 
   const handleCloseLoginPrompt = () => {
@@ -294,11 +290,10 @@ export default function Accommodations() {
               <h3>Authentication Required</h3>
             </div>
             <div className={style.loginModalBody}>
-              <p>Please log in to save properties to your favorites and shortlist.</p>
+              <p>Please log in to interact with properties.</p>
               <div className={style.loginBenefits}>
                 <h4>Benefits of logging in:</h4>
                 <ul>
-                  <li>Save favorite properties</li>
                   <li>Create shortlists for comparison</li>
                   <li>Book viewing appointments</li>
                   <li>Contact property owners</li>
@@ -312,7 +307,7 @@ export default function Accommodations() {
                 onClick={handleLoginClick}
               >
                 <FaSignInAlt />
-                Log In / Sign Up
+                Log In Now
               </button>
               <button 
                 className={style.cancelButton}
@@ -329,7 +324,6 @@ export default function Accommodations() {
       {recentAction && (
         <div className={style.toast}>
           {recentAction.isAdded ? '✓ Added to' : '✗ Removed from'} {' '}
-          {recentAction.type === 'favorite' && 'Favorites'}
           {recentAction.type === 'shortlist' && 'Shortlist'}
           : {recentAction.propertyName}
         </div>
@@ -339,12 +333,15 @@ export default function Accommodations() {
         {/* User Status Bar */}
         {user && (
           <div className={style.userStatusBar}>
-            <span>Welcome, {user.name}! </span>
+            <span>Welcome, {user.username || user.email}! </span>
             <span className={style.authStatus}>✓ Logged In</span>
+            <span className={style.roleBadge}>
+              {getUserRole() === 'landlord' ? '🏠 Landlord' : '🎓 Student'}
+            </span>
           </div>
         )}
 
-        {/* Pagination Controls - Simplified since we're loading all data */}
+        {/* Pagination Controls */}
         <div className={style.paginationControls}>
           <button onClick={increasePageSize} className={style.loadMoreBtn}>
             Load All Accommodations ({accommodations.length} loaded)
@@ -515,7 +512,7 @@ export default function Accommodations() {
           </div>
         </div>
 
-        {/* Listings - FIXED: Use uniqueKey for the key prop */}
+        {/* Listings - UPDATED: Removed like functionality */}
         <section className={style.ListingsGrid}>
           {filteredAndSortedAccommodations.length > 0 ? (
             filteredAndSortedAccommodations.map((accommodation) => {
@@ -537,14 +534,6 @@ export default function Accommodations() {
                       />
                     </Link>
                     <div className={style.iconsContainer}>
-                      <button 
-                        className={`${style.iconButton} ${isFavorite(documentId) ? style.active : ''} ${!user ? style.disabled : ''}`}
-                        onClick={() => handleFavorite(accommodation)}
-                        title={!user ? "Log in to add to favorites" : isFavorite(documentId) ? "Remove from favorites" : "Add to favorites"}
-                      >
-                        {isFavorite(documentId) ? <FaHeart color="red" /> : <FaRegHeart />}
-                      </button>
-
                       <button 
                         className={`${style.iconButton} ${isInShortlist(documentId) ? style.active : ''} ${!user ? style.disabled : ''}`}
                         onClick={() => handleShortlist(accommodation)}

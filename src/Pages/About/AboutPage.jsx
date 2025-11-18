@@ -71,13 +71,7 @@ export default function AboutPage() {
       {aboutItems && (
         <>
           {/* Hero Section */}
-          <Hero
-            imagePath={`${API_BASE_URL}${aboutItems?.HeroSection?.heroImage?.url}`}
-            title={aboutItems?.HeroSection?.topDescription}
-            description={aboutItems?.HeroSection?.bottomDescription}
-            universityName="Chinhoyi University of Technology"
-            alternativeText={aboutItems?.HeroSection?.heroImage?.alternativeText}
-          />
+          
 
           {/* Company Overview */}
           <section className={style.Overview}>

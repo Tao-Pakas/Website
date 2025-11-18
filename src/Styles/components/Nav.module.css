@@ -174,7 +174,7 @@ body {
     background: white;
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    min-width: 200px;
+    min-width: 240px;
     padding: 0.5rem 0;
     margin-top: 0.5rem;
     z-index: 1001;
@@ -259,6 +259,51 @@ body {
     color: #666;
 }
 
+/* NEW: User Role Styles */
+.userRole {
+    margin-top: 0.25rem;
+}
+
+.roleBadge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    display: inline-block;
+}
+
+.roleBadge.student {
+    background: #e3f2fd;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+}
+
+.roleBadge.landlord {
+    background: #f3e5f5;
+    color: #7b1fa2;
+    border: 1px solid #e1bee7;
+}
+
+/* Role-specific dashboard styles */
+.landlordDashboard {
+    background: #f3e5f5 !important;
+    border-left: 3px solid #7b1fa2;
+}
+
+.studentDashboard {
+    background: #e3f2fd !important;
+    border-left: 3px solid #1976d2;
+}
+
+.landlordDashboard:hover {
+    background: #e1bee7 !important;
+}
+
+.studentDashboard:hover {
+    background: #bbdefb !important;
+}
+
 .dropdownDivider {
     height: 1px;
     background: #eee;
@@ -293,7 +338,7 @@ body {
     border-radius: 12px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     width: 90%;
-    max-width: 400px;
+    max-width: 450px;
     max-height: 90vh;
     overflow-y: auto;
     animation: modalSlideIn 0.3s ease-out;
@@ -397,6 +442,30 @@ body {
 }
 
 .formGroup input:focus {
+    outline: none;
+    border-color: var(--nav-background-color);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(96, 77, 60, 0.1);
+}
+
+/* NEW: Role Selection Styles */
+.roleSelect {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: var(--transition);
+    background: #fafafa;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 0.65rem;
+}
+
+.roleSelect:focus {
     outline: none;
     border-color: var(--nav-background-color);
     background: white;
@@ -578,6 +647,17 @@ body {
         color: var(--nav-font-color);
     }
     
+    /* Role badges on mobile */
+    .roleBadge.student {
+        background: rgba(227, 242, 253, 0.2);
+        color: #bbdefb;
+    }
+    
+    .roleBadge.landlord {
+        background: rgba(243, 229, 245, 0.2);
+        color: #e1bee7;
+    }
+    
     /* Login Modal Mobile Styles */
     .loginModal {
         width: 95%;
@@ -647,7 +727,8 @@ body {
 .dropdownItem:focus-visible,
 .closeButton:focus-visible,
 .submitButton:focus-visible,
-.formGroup input:focus-visible {
+.formGroup input:focus-visible,
+.roleSelect:focus-visible {
     outline: 2px solid var(--nav-logo-font-color);
     outline-offset: 2px;
 }
@@ -667,4 +748,25 @@ body {
 
 .skip-link:focus {
     top: 0;
+}
+
+/* Add to your Nav.module.css */
+.loadingSpinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.submitButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }

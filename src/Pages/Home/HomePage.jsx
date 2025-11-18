@@ -10,8 +10,11 @@ import {
   FaRegHeart, 
   FaShoppingCart,
   FaCartPlus,
+  FaThumbsUp,
+  FaRegThumbsUp
 } from 'react-icons/fa';
 import { useApp } from '../../Contexts/AppContext';
+import { useAuth } from '../../Contexts/AuthContext';
 
 // Constants
 const API_BASE_URL = 'http://localhost:1337';
@@ -28,8 +31,12 @@ export default function HomePage() {
     addToShortlist,
     removeFromShortlist,
     isFavorite,
-    isInShortlist
+    isInShortlist,
+    isPropertyLiked,
+    togglePropertyLike
   } = useApp();
+
+  const { user, getUserRole } = useAuth();
 
   const [recentAction, setRecentAction] = useState(null);
 
@@ -72,12 +79,35 @@ export default function HomePage() {
     setTimeout(() => setRecentAction(null), 3000);
   };
 
+  // NEW: Like handler
+  const handleLike = async (propertyId, propertyName) => {
+    if (!user) return;
+    
+    try {
+      const result = await togglePropertyLike(propertyId);
+      
+      if (result.success) {
+        const wasLiked = isPropertyLiked(propertyId);
+        setRecentAction({
+          type: 'like',
+          propertyId,
+          propertyName,
+          isAdded: !wasLiked
+        });
+        setTimeout(() => setRecentAction(null), 3000);
+      }
+    } catch (error) {
+      console.error('Error handling like:', error);
+    }
+  };
+
   return (
     <div className={style.Body}>
       {/* Action Feedback Toast */}
       {recentAction && (
         <div className={style.toast}>
           {recentAction.isAdded ? '✓ Added to' : '✗ Removed from'} {' '}
+          {recentAction.type === 'like' && 'Likes'}
           {recentAction.type === 'favorite' && 'Favorites'}
           {recentAction.type === 'shortlist' && 'Shortlist'}
           : {recentAction.propertyName}
@@ -85,18 +115,23 @@ export default function HomePage() {
       )}
       
       {data?.homepage?.HomePage?.map((block, index) => {
-        const key = block.id || `block-${index}`;
+        // FIX: Create truly unique keys by combining type, id, and index
+        const key = `${block.__typename}-${block.id || 'no-id'}-${index}`;
 
         // ================= Hero Section =================
         if (block.__typename === 'ComponentCommonHero') {
+          // FIX: Ensure imagePath is never undefined
+          const heroImageUrl = block?.heroImage?.url;
+          const imagePath = heroImageUrl ? getImageUrl(heroImageUrl) : '';
+          
           return (
             <Hero
               key={key}
-              imagePath={getImageUrl(block?.heroImage?.url)}
+              imagePath={imagePath}
               title={block?.topDescription}
               description={block?.bottomDescription}
               universityName="Chinhoyi University of Technology"
-              alternativeText={block?.heroImage?.alternativeText}
+              alternativeText={block?.heroImage?.alternativeText || 'Hero image'}
             />
           );
         }
@@ -110,10 +145,11 @@ export default function HomePage() {
                 <h2 className={style.WhyChooseUsTitle}>Expert Student Housing Solutions</h2>
               </div>
               <div className={style.ReasonsGrid}>
-                {block.Card?.map((card) => (
+                {block.Card?.map((card, cardIndex) => (
                   <div
                     className={style.ReasonCard}
-                    key={`${key}-card-${card.id}`}
+                    // FIX: Unique key for nested items
+                    key={`${key}-card-${card.id || cardIndex}`}
                   >
                     <div className={style.ReasonIcon}>
                       <img
@@ -185,76 +221,92 @@ export default function HomePage() {
                 </Link>
               </div>
               <section className={style.PopularProperties}>
-                {block.Card?.map((card) => (
-                  <div className={style.PropertyContainer} key={card.id}>
-                    <div className={style.ImageContainer}>
-                      {card?.Media?.CoverImage?.url && (
-                        <Link to="/Single" className={style.ImageContainer}>
-                          <img
-                            src={getImageUrl(card.Media.CoverImage.url)}
-                            alt={card.Media.CoverImage.alternativeText || 'Accommodation'}
-                            className={style.Image}
-                            loading="lazy"
-                          />
+                {block.Card?.map((card, cardIndex) => {
+                  const isLiked = isPropertyLiked(card.id);
+                  
+                  return (
+                    <div className={style.PropertyContainer} 
+                      // FIX: Unique key for property cards
+                      key={`${key}-property-${card.id || cardIndex}`}
+                    >
+                      <div className={style.ImageContainer}>
+                        {card?.Media?.CoverImage?.url && (
+                          <Link to="/Single" className={style.ImageContainer}>
+                            <img
+                              src={getImageUrl(card.Media.CoverImage.url)}
+                              alt={card.Media.CoverImage.alternativeText || 'Accommodation'}
+                              className={style.Image}
+                              loading="lazy"
+                            />
+                          </Link>
+                        )}
+                        <div className={style.iconsContainer}>
+                          {/* NEW: Like button */}
+                          <button 
+                            className={`${style.iconButton} ${isLiked ? style.liked : ''} ${!user ? style.disabled : ''}`}
+                            onClick={() => handleLike(card.id, card.Name)}
+                            aria-label={!user ? "Log in to like" : isLiked ? "Unlike property" : "Like property"}
+                            title={!user ? "Log in to like" : isLiked ? "Unlike" : "Like"}
+                          >
+                            {isLiked ? <FaThumbsUp color="#3498db" /> : <FaRegThumbsUp />}
+                          </button>
+
+                          {/* Favorite Icon */}
+                          <button 
+                            className={`${style.iconButton} ${isFavorite(card.id) ? style.active : ''} ${!user ? style.disabled : ''}`}
+                            onClick={() => handleFavorite(card.id, card.Name)}
+                            aria-label={!user ? "Log in to add to favorites" : isFavorite(card.id) ? "Remove from favorites" : "Add to favorites"}
+                          >
+                            {isFavorite(card.id) ? <FaHeart color="red" /> : <FaRegHeart />}
+                          </button>
+
+                          {/* Shortlist Icon */}
+                          <button 
+                            className={`${style.iconButton} ${isInShortlist(card.id) ? style.active : ''} ${!user ? style.disabled : ''}`}
+                            onClick={() => handleShortlist(
+                              card, 
+                              isInShortlist(card.id) ? 'remove' : 'add'
+                            )}
+                            aria-label={!user ? "Log in to add to shortlist" : isInShortlist(card.id) ? "Remove from shortlist" : "Add to shortlist"}
+                          >
+                            {isInShortlist(card.id) ? <FaShoppingCart color="green" /> : <FaCartPlus />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className={style.InfoContainer}>
+                        <div className={style.InfoRow}>
+                          <span className={style.Label}>Address</span>
+                          <span className={style.Value}>{card?.Location?.Address}</span>
+                        </div>
+                        <div className={style.InfoRow}>
+                          <span className={style.Label}>Price</span>
+                          <span className={style.Value}>{card?.Details?.price}</span>
+                        </div>
+                        <div className={style.InfoRow}>
+                          <span className={style.Label}>Available</span>
+                          <span className={style.Value}>
+                            {card?.Details?.isFull ? 'No' : 'Yes'}
+                          </span>
+                        </div>
+                        <div className={style.InfoRow}>
+                          <span className={style.Label}>Gender</span>
+                          <span className={style.Value}>{card?.Details?.Type}</span>
+                        </div>
+                        <Link to="/Single">
+                          <button className={style.submit}>
+                            View Accommodation
+                          </button>
                         </Link>
-                      )}
-                      <div className={style.iconsContainer}>
-
-                        {/* Favorite Icon */}
-                        <button 
-                          className={`${style.iconButton} ${isFavorite(card.id) ? style.active : ''}`}
-                          onClick={() => handleFavorite(card.id, card.Name)}
-                          aria-label={isFavorite(card.id) ? 'Remove from favorites' : 'Add to favorites'}
-                        >
-                          {isFavorite(card.id) ? <FaHeart color="red" /> : <FaRegHeart />}
-                        </button>
-
-                        {/* Shortlist Icon */}
-                        <button 
-                          className={`${style.iconButton} ${isInShortlist(card.id) ? style.active : ''}`}
-                          onClick={() => handleShortlist(
-                            card, 
-                            isInShortlist(card.id) ? 'remove' : 'add'
-                          )}
-                          aria-label={isInShortlist(card.id) ? 'Remove from shortlist' : 'Add to shortlist'}
-                        >
-                          {isInShortlist(card.id) ? <FaShoppingCart color="green" /> : <FaCartPlus />}
-                        </button>
                       </div>
                     </div>
-                    <div className={style.InfoContainer}>
-                      <div className={style.InfoRow}>
-                        <span className={style.Label}>Address</span>
-                        <span className={style.Value}>{card?.Location?.Address}</span>
-                      </div>
-                      <div className={style.InfoRow}>
-                        <span className={style.Label}>Price</span>
-                        <span className={style.Value}>{card?.Details?.price}</span>
-                      </div>
-                      <div className={style.InfoRow}>
-                        <span className={style.Label}>Available</span>
-                        <span className={style.Value}>
-                          {card?.Details?.isFull ? 'No' : 'Yes'}
-                        </span>
-                      </div>
-                      <div className={style.InfoRow}>
-                        <span className={style.Label}>Gender</span>
-                        <span className={style.Value}>{card?.Details?.Type}</span>
-                      </div>
-                      <Link to="/Single">
-                        <button className={style.submit}>
-                          View Accommodation
-                        </button>
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </section>
             </div>
           );
         }
 
-        return null; // Ignore unknown blocks
+        return null;
       })}
     </div>
   );

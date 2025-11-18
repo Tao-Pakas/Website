@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import style from '../../Styles/pages/SavedPage.module.css';
-import { FaShoppingCart, FaTrash, FaEye, FaSearch, FaBed, FaBath, FaRulerCombined } from 'react-icons/fa';
+import { FaShoppingCart, FaTrash, FaEye, FaSearch, FaBed, FaBath, FaRulerCombined, FaThumbsUp } from 'react-icons/fa';
 import { useApp } from '../../Contexts/AppContext';
+import { useAuth } from '../../Contexts/AuthContext';
 
 export default function SavedPage() {
   const { shortlist, removeFromShortlist } = useApp();
+  const { getUserRole } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
 
   // Debug effect to see what's in context
   useEffect(() => {
     console.log('=== SAVED PAGE DEBUG ===');
     console.log('Shortlist:', shortlist);
+    console.log('User role:', getUserRole());
     console.log('======================');
-  }, [shortlist]);
+  }, [shortlist, getUserRole]);
 
   // Simple property data function
   const getPropertyData = (item) => {
@@ -29,6 +32,7 @@ export default function SavedPage() {
         bedrooms: item.details?.Bedrooms || '0',
         bathrooms: item.details?.Bathrooms || '0',
         area: item.details?.Area || 'N/A',
+        likes: item.likes || 0,
         image: item.media?.CoverImage?.url 
           ? `http://localhost:1337${item.media.CoverImage.url}`
           : '/default-property.jpg',
@@ -46,6 +50,7 @@ export default function SavedPage() {
       bedrooms: item.bedrooms || '0',
       bathrooms: item.bathrooms || '0',
       area: item.area || 'N/A',
+      likes: item.likes || 0,
       image: item.image || '/default-property.jpg',
       isAvailable: true,
       addedDate: item.addedDate || new Date().toISOString()
@@ -70,7 +75,8 @@ export default function SavedPage() {
   };
 
   const getActiveItems = () => {
-    const items = shortlist?.items || [];
+    // Use shortlist directly (it should be an array in AppContext)
+    const items = Array.isArray(shortlist) ? shortlist : [];
     console.log('Shortlist items:', items);
     return filterItems(items);
   };
@@ -93,17 +99,9 @@ export default function SavedPage() {
 
   const activeItems = getActiveItems();
 
-  // Debug view to see what's happening
-  if (!shortlist) {
-    return (
-      <div className={style.SavedPage}>
-        <div className={style.error}>
-          <h2>Context Not Loaded</h2>
-          <p>The application context is not available. Make sure you're wrapped in AppProvider.</p>
-        </div>
-      </div>
-    );
-  }
+  // Show role-specific message
+  const userRole = getUserRole();
+  const isLandlord = userRole === 'landlord';
 
   return (
     <div className={style.SavedPage}>
@@ -111,16 +109,16 @@ export default function SavedPage() {
         <h1>Your Shortlist</h1>
         <p>Properties you're considering for your next home</p>
         
-        {/* Debug info */}
-        <div style={{ 
-          background: '#f8f9fa', 
-          padding: '1rem', 
-          borderRadius: '8px', 
-          marginTop: '1rem',
-          fontSize: '0.9rem',
-          color: '#666'
-        }}>
-          <strong>Shortlist Count:</strong> {shortlist?.items?.length || 0} items
+        {/* Role info */}
+        <div className={style.roleInfo}>
+          <span className={style.userRole}>
+            {isLandlord ? '🏠 Landlord' : '🎓 Student'} View
+          </span>
+          {isLandlord && (
+            <span className={style.roleNote}>
+              (As a landlord, you can shortlist properties for reference)
+            </span>
+          )}
         </div>
       </div>
 
@@ -177,6 +175,13 @@ export default function SavedPage() {
                   <div className={style.itemBadge}>
                     <FaShoppingCart />
                   </div>
+                  {/* Likes badge */}
+                  {property.likes > 0 && (
+                    <div className={style.likesBadge}>
+                      <FaThumbsUp />
+                      <span>{property.likes}</span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className={style.itemDetails}>
@@ -187,7 +192,8 @@ export default function SavedPage() {
                   <div className={style.itemFeatures}>
                     <span><FaBed /> {property.bedrooms} beds</span>
                     <span><FaBath /> {property.bathrooms} baths</span>
-                    <span><FaRulerCombined /> {property.area} sqft</span>
+                    {property.area && <span><FaRulerCombined /> {property.area} sqft</span>}
+                    {property.likes > 0 && <span><FaThumbsUp /> {property.likes} likes</span>}
                   </div>
                   
                   <div className={style.itemMeta}>
@@ -226,7 +232,10 @@ export default function SavedPage() {
             </div>
             <h3>No properties in your shortlist yet</h3>
             <p>
-              Properties you're considering will appear here. Start browsing and add some properties to your shortlist!
+              {isLandlord 
+                ? "Properties you're considering for reference will appear here."
+                : "Properties you're considering will appear here. Start browsing and add some properties to your shortlist!"
+              }
             </p>
             <Link to="/listings" className={style.browseButton}>
               Browse Properties
