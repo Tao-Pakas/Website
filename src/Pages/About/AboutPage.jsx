@@ -62,8 +62,6 @@ export default function AboutPage() {
   // Team preview
   const teamMembers = [
     { name: "Taonashe Pakachena", role: "Founder & CEO" },
-    { name: "Mike Chen", role: "Head of Operations" },
-    { name: "Emily Davis", role: "Student Relations" }
   ];
 
   return (

@@ -2,22 +2,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import style from '../../Styles/components/Nav.module.css';
 import { 
-  FaHeart, 
-  FaBookmark, 
   FaShoppingCart, 
   FaChevronDown, 
   FaChevronUp,
-  FaBars,
   FaTimes,
   FaCog,
-  FaDashcube,
-  FaTachometerAlt,
   FaUser,
   FaSignInAlt,
   FaExclamationCircle,
   FaHome,
   FaBuilding,
-  FaEnvelope
 } from 'react-icons/fa';
 import { useAuth } from '../../Contexts/AuthContext';
 
@@ -25,11 +19,10 @@ export default function Navbar() {
   const { 
     user, 
     login, 
-    register, 
     logout,
     forgotPassword,
-    loading: authLoading,
-    error: authError 
+    tempRegister, // Use tempRegister for signup
+    hasPendingRegistration,
   } = useAuth();
   
   const navigate = useNavigate();
@@ -37,6 +30,7 @@ export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSignupModal, setShowSignupModal] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -52,40 +46,28 @@ export default function Navbar() {
     signupPhone: '',
     signupPassword: '',
     signupRole: 'student',
-    
     firstName: '',      
     lastName: '',      
     university: '',  
     studentIdNumber: '',
     yearOfStudy: '', 
     course: '', 
-    
     companyName: '',
     address: '',
     description: '',
-    
     forgotEmail: ''
   });
 
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const loginModalRef = useRef(null);
+  const signupModalRef = useRef(null);
 
-  // DEBUG: Log user data to troubleshoot role detection
-  useEffect(() => {
-    console.log('=== NAVBAR USER DEBUG ===');
-    console.log('User object:', user);
-    console.log('User role field:', user?.role);
-    console.log('User role name:', user?.role?.name);
-    console.log('User ID:', user?.id);
-    console.log('=====================');
-  }, [user]);
-
-  // Clear messages when switching tabs
+  // Clear messages when switching tabs or opening modals
   useEffect(() => {
     setError('');
     setSuccess('');
-  }, [activeTab]);
+  }, [activeTab, showLoginModal, showSignupModal]);
 
   // Toggle dropdown menu
   const toggleDropdown = () => {
@@ -106,33 +88,49 @@ export default function Navbar() {
     setSuccess('');
   };
 
-  // Close login modal and reset form - ADD ALL THE NEW FIELDS
-const handleCloseLogin = () => {
-  setShowLoginModal(false);
-  setActiveTab('login');
-  setError('');
-  setSuccess('');
-  setFormData({
-    loginIdentifier: '',
-    loginPassword: '',
-    signupUsername: '',
-    signupEmail: '',
-    signupFullName: '',
-    signupPhone: '',
-    signupPassword: '',
-    signupRole: 'student',
-    firstName: '',
-    lastName: '',
-    university: '',
-    studentIdNumber: '',
-    yearOfStudy: '',
-    course: '',
-    companyName: '',
-    address: '',
-    description: '',
-    forgotEmail: ''
-  });
-};
+  // Handle signup button click
+  const handleSignupClick = () => {
+    setShowSignupModal(true);
+    setActiveTab('signup');
+    setIsMobileMenuOpen(false);
+    setError('');
+    setSuccess('');
+  };
+
+  // Close login modal and reset form
+  const handleCloseLogin = () => {
+    setShowLoginModal(false);
+    setActiveTab('login');
+    setError('');
+    setSuccess('');
+    setFormData(prev => ({
+      ...prev,
+      loginIdentifier: '',
+      loginPassword: '',
+      forgotEmail: ''
+    }));
+  };
+
+  // Close signup modal and reset form
+  const handleCloseSignup = () => {
+    setShowSignupModal(false);
+    setActiveTab('signup');
+    setError('');
+    setSuccess('');
+    setFormData(prev => ({
+      ...prev,
+      signupUsername: '',
+      signupEmail: '',
+      signupFullName: '',
+      signupPhone: '',
+      signupPassword: '',
+      signupRole: 'student',
+      firstName: '',
+      lastName: '',
+      companyName: '',
+      address: ''
+    }));
+  };
 
   // Handle input changes for all forms
   const handleInputChange = (field, value) => {
@@ -175,126 +173,110 @@ const handleCloseLogin = () => {
           window.location.reload();
         }, 1000);
       } else {
-        console.log('❌ Login failed:', result.error);
         setError(result.error || 'Login failed');
       }
     } catch (error) {
-      console.error('🚨 Login error:', error);
-      setError(error.message || 'An error occurred during login');
+      setError(error.message || 'An error occurred during login \n Please try again');
     } finally {
       setLoading(false);
     }
   };
 
- const handleSignupSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError('');
-  setSuccess('');
+  // Handle signup form submission
+  const handleSignupSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
 
-  try {
-    console.log('🔍 FORM DATA DEBUG:', formData);
-
-    // Enhanced validation
-    if (!formData.signupUsername?.trim()) {
-      throw new Error('Username is required');
-    }
-    if (!formData.signupEmail?.trim()) {
-      throw new Error('Email is required');
-    }
-    if (!formData.signupPassword) {
-      throw new Error('Password is required');
-    }
-    if (formData.signupPassword.length < 6) {
-      throw new Error('Password must be at least 6 characters long');
-    }
-
-    // Validate role-specific required fields
-    if (formData.signupRole === 'student') {
-      if (!formData.firstName?.trim() || !formData.lastName?.trim()) {
-        throw new Error('First name and last name are required for students');
+    try {
+      // Enhanced validation
+      if (!formData.signupUsername?.trim()) {
+        throw new Error('Username is required');
       }
-    } else {
-      if (!formData.signupFullName?.trim()) {
-        throw new Error('Full name is required for landlords');
+      if (!formData.signupEmail?.trim()) {
+        throw new Error('Email is required');
       }
+      if (!formData.signupPassword) {
+        throw new Error('Password is required');
+      }
+      if (formData.signupPassword.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
+
+      // Validate role-specific required fields
+      if (formData.signupRole === 'student') {
+        if (!formData.firstName?.trim() || !formData.lastName?.trim()) {
+          throw new Error('First name and last name are required for students');
+        }
+      } else {
+        if (!formData.signupFullName?.trim()) {
+          throw new Error('Full name is required for landlords');
+        }
+      }
+
+      // Prepare registration data
+      const registrationData = {
+        username: formData.signupUsername.trim(),
+        email: formData.signupEmail.trim().toLowerCase(),
+        password: formData.signupPassword,
+        phone: formData.signupPhone?.trim() || '',
+        role: formData.signupRole,
+      };
+
+      // Add role-specific data
+      if (formData.signupRole === 'student') {
+        registrationData.firstName = formData.firstName.trim();
+        registrationData.lastName = formData.lastName.trim();
+      } else {
+        registrationData.fullName = formData.signupFullName.trim();
+        registrationData.companyName = formData.companyName?.trim() || '';
+        registrationData.address = formData.address?.trim() || '';
+      }
+
+      // Call tempRegister instead of register (stores data locally until email verification)
+      const result = await tempRegister(registrationData);
+
+      if (result.success) {
+        // Show success message with verification instructions
+        setSuccess(`
+          ✅ Registration started!
+          📧 Verification email sent to ${formData.signupEmail}
+          Please check your inbox and click the verification link to complete registration.
+        `);
+        
+        // Reset form
+        setFormData({
+          loginIdentifier: '',
+          loginPassword: '',
+          signupUsername: '',
+          signupEmail: '',
+          signupFullName: '',
+          signupPhone: '',
+          signupPassword: '',
+          signupRole: 'student',
+          firstName: '',
+          lastName: '',
+          companyName: '',
+          address: '',
+          forgotEmail: ''
+        });
+        
+        // Close modal after 3 seconds and redirect to verification page
+        setTimeout(() => {
+          setShowSignupModal(false);
+          navigate('/verify-email');
+        }, 3000);
+        
+      } else {
+        setError(result.error || 'Registration failed. Please try again.');
+      }
+    } catch (error) {
+      setError(error.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    // Prepare registration data - USE THE CORRECT FIELDS
-    const registrationData = {
-      username: formData.signupUsername.trim(),
-      email: formData.signupEmail.trim().toLowerCase(),
-      password: formData.signupPassword,
-      phone: formData.signupPhone?.trim() || '',
-      role: formData.signupRole,
-    };
-
-    // Add role-specific data - USE THE CORRECT FIELD NAMES
-    if (formData.signupRole === 'student') {
-      registrationData.firstName = formData.firstName.trim();
-      registrationData.lastName = formData.lastName.trim();
-      registrationData.university = formData.university || '';
-      registrationData.studentIdNumber = formData.studentIdNumber || '';
-      registrationData.yearOfStudy = formData.yearOfStudy ? parseInt(formData.yearOfStudy) : 1;
-      registrationData.course = formData.course || '';
-    } else {
-      registrationData.fullName = formData.signupFullName.trim();
-      registrationData.companyName = formData.companyName?.trim() || '';
-      registrationData.address = formData.address?.trim() || '';
-      registrationData.description = formData.description || '';
-    }
-
-    console.log('📤 Sending registration data to AuthContext:', registrationData);
-
-    // Call the register function from AuthContext
-    const result = await register(registrationData);
-    console.log('📥 Registration result from AuthContext:', result);
-
-    if (result.success) {
-      console.log('✅ Registration successful in handleSignupSubmit');
-      
-      // Show success message
-      setSuccess(`Account created successfully! Welcome to VarsityCribs!`);
-      
-      // Reset form
-      setFormData({
-        loginIdentifier: '',
-        loginPassword: '',
-        signupUsername: '',
-        signupEmail: '',
-        signupFullName: '',
-        signupPhone: '',
-        signupPassword: '',
-        signupRole: 'student',
-        firstName: '',
-        lastName: '',
-        university: '',
-        studentIdNumber: '',
-        yearOfStudy: '',
-        course: '',
-        companyName: '',
-        address: '',
-        description: '',
-        forgotEmail: ''
-      });
-      
-      // Close modal after a short delay to show success message
-      setTimeout(() => {
-        setShowLoginModal(false);
-        console.log('🚪 Modal closed after successful registration');
-      }, 2000);
-      
-    } else {
-      console.log('❌ Registration failed in handleSignupSubmit:', result.error);
-      setError(result.error || 'Registration failed. Please try again.');
-    }
-  } catch (error) {
-    console.error('🚨 Signup error in handleSignupSubmit:', error);
-    setError(error.message || 'Registration failed. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // Handle forgot password submission
   const handleForgotPasswordSubmit = async (e) => {
@@ -316,7 +298,6 @@ const handleCloseLogin = () => {
         setError(result.error);
       }
     } catch (error) {
-      console.error('Forgot password error:', error);
       setError('Failed to send reset instructions.');
     } finally {
       setLoading(false);
@@ -325,7 +306,6 @@ const handleCloseLogin = () => {
 
   // Handle logout
   const handleLogout = () => {
-    console.log('🚪 Logging out user');
     logout();
     setIsDropdownOpen(false);
     setIsMobileMenuOpen(false);
@@ -333,59 +313,48 @@ const handleCloseLogin = () => {
     navigate('/');
   };
 
- // FIXED: Improved role detection in Navbar.jsx
-// Update the role detection functions:
+  // FIXED: Improved role detection function
+  const getUserRole = () => {
+    if (!user) return null;
+    
+    if (user.role && typeof user.role === 'object' && user.role.name) {
+      return user.role.name;
+    }
+    
+    if (typeof user.role === 'string') {
+      return user.role;
+    }
+    
+    if (user.landlord) return 'landlord';
+    if (user.student) return 'student';
+    
+    return null;
+  };
 
-// FIXED: Improved role detection function - Handle role OBJECT properly
-const getUserRole = () => {
-  if (!user) return null;
-  
-  console.log('Role detection - user.role:', user.role);
-  
-  // Handle case where role is an object with name property (from populated query)
-  if (user.role && typeof user.role === 'object' && user.role.name) {
-    return user.role.name;
-  }
-  
-  // Handle case where role is a string
-  if (typeof user.role === 'string') {
-    return user.role;
-  }
-  
-  // Check for profile existence as fallback
-  if (user.landlord) return 'landlord';
-  if (user.student) return 'student';
-  
-  return null;
-};
-
-// FIXED: Get appropriate dashboard link based on role
-const getDashboardLink = () => {
-  const role = getUserRole();
-  console.log('Dashboard link for role:', role);
-  
-  if (role === 'landlord' || user?.landlord) {
-    return '/LandlordDash';
-  } else if (role === 'student' || user?.student) {
+  // Get appropriate dashboard link based on role
+  const getDashboardLink = () => {
+    const role = getUserRole();
+    
+    if (role === 'landlord' || user?.landlord) {
+      return '/LandlordDash';
+    } else if (role === 'student' || user?.student) {
+      return '/DashBoard';
+    }
+    
     return '/DashBoard';
-  }
-  
-  return '/DashBoard'; // Default fallback
-};
+  };
 
-// FIXED: Get role display text - Handle role object properly
-const getRoleDisplay = () => {
-  const role = getUserRole();
-  console.log('Role display for:', role);
-  
-  if (role === 'landlord' || user?.landlord) return '🏠 Landlord';
-  if (role === 'student' || user?.student) return '🎓 Student';
-  if (role === 'authenticated') return '👤 User';
-  if (role === 'public') return '👤 Public';
-  
-  return '👤 User'; // Fallback
-};
-
+  // Get role display text
+  const getRoleDisplay = () => {
+    const role = getUserRole();
+    
+    if (role === 'landlord' || user?.landlord) return '🏠 Landlord';
+    if (role === 'student' || user?.student) return '🎓 Student';
+    if (role === 'authenticated') return '👤 User';
+    if (role === 'public') return '👤 Public';
+    
+    return '👤 User';
+  };
  
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -399,13 +368,34 @@ const getRoleDisplay = () => {
       if (loginModalRef.current && !loginModalRef.current.contains(event.target) && showLoginModal) {
         setShowLoginModal(false);
       }
+      if (signupModalRef.current && !signupModalRef.current.contains(event.target) && showSignupModal) {
+        setShowSignupModal(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showLoginModal]);
+  }, [showLoginModal, showSignupModal]);
+
+  // Switch to login modal from signup
+  const switchToLogin = () => {
+    setShowSignupModal(false);
+    setTimeout(() => {
+      setShowLoginModal(true);
+      setActiveTab('login');
+    }, 100);
+  };
+
+  // Switch to signup modal from login
+  const switchToSignup = () => {
+    setShowLoginModal(false);
+    setTimeout(() => {
+      setShowSignupModal(true);
+      setActiveTab('signup');
+    }, 100);
+  };
 
   return (
     <>
@@ -460,15 +450,17 @@ const getRoleDisplay = () => {
             Contact Us
           </Link>
           
-          {/* Login Button or User Welcome */}
+          {/* Login/Signup Buttons or User Welcome */}
           {!user ? (
-            <button 
-              className={style.Login}
-              onClick={handleLoginClick}
-            >
-              <FaSignInAlt />
-              Log In
-            </button>
+            <div className={style.authButtons}>
+              <button 
+                className={style.Login}
+                onClick={handleLoginClick}
+              >
+                <FaSignInAlt />
+                Log In
+              </button>
+            </div>
           ) : (
             <div className={style.userWelcome}>
               Welcome, {user.username || user.email}
@@ -489,7 +481,7 @@ const getRoleDisplay = () => {
             {isDropdownOpen && (
               <div className={style.dropdownMenu}>
                 {user ? (
-                  // User is logged in - FIXED with proper role object handling
+                  // User is logged in
                   <>
                     <div className={style.userInfo}>
                       <FaUser className={style.userIcon} />
@@ -500,7 +492,6 @@ const getRoleDisplay = () => {
                             {getRoleDisplay()}
                           </span>
                         </div>
-                        
                       </div>
                     </div>
                     <div className={style.dropdownDivider}></div>
@@ -540,18 +531,6 @@ const getRoleDisplay = () => {
                     )}
 
                     <Link 
-                      to="/SavedPage" 
-                      className={style.dropdownItem}
-                      onClick={() => {
-                        setIsDropdownOpen(false);
-                        setIsMobileMenuOpen(false);
-                      }}
-                    >
-                      <FaShoppingCart className={style.dropdownIcon} />
-                      <span className={style.dropdownText}>Shortlist</span>
-                    </Link>
-
-                    <Link 
                       to="/Settings" 
                       className={style.dropdownItem}
                       onClick={() => {
@@ -584,6 +563,13 @@ const getRoleDisplay = () => {
                       <span className={style.dropdownText}>Log In</span>
                     </button>
                     
+                    <button 
+                      className={style.dropdownItem}
+                      onClick={handleSignupClick}
+                    >
+                      <span className={style.dropdownText}>Sign Up</span>
+                    </button>
+                    
                     <Link 
                       to="/SavedPage" 
                       className={style.dropdownItem}
@@ -603,14 +589,13 @@ const getRoleDisplay = () => {
         </div>
       </nav>
 
-      {/* Login/Signup Modal */}
+      {/* Login Modal */}
       {showLoginModal && (
         <div className={style.modalOverlay}>
           <div className={style.loginModal} ref={loginModalRef}>
             <div className={style.modalHeader}>
               <h2>
                 {activeTab === 'login' && 'Welcome Back'}
-                {activeTab === 'signup' && 'Create Account'}
                 {activeTab === 'forgot' && 'Reset Password'}
               </h2>
               <button 
@@ -689,177 +674,6 @@ const getRoleDisplay = () => {
               </form>
             )}
 
-{/* Signup Form */}
-{activeTab === 'signup' && (
-  <form onSubmit={handleSignupSubmit} className={style.loginForm}>
-    <div className={style.formGroup}>
-      <label htmlFor="signupUsername">Username *</label>
-      <input
-        type="text"
-        id="signupUsername"
-        value={formData.signupUsername}
-        onChange={(e) => handleInputChange('signupUsername', e.target.value)}
-        placeholder="Enter your username"
-        required
-        disabled={loading}
-      />
-    </div>
-    
-    <div className={style.formGroup}>
-      <label htmlFor="signupEmail">Email *</label>
-      <input
-        type="email"
-        id="signupEmail"
-        value={formData.signupEmail}
-        onChange={(e) => handleInputChange('signupEmail', e.target.value)}
-        placeholder="Enter your email"
-        required
-        disabled={loading}
-      />
-    </div>
-    
-    {/* Conditional Name Fields */}
-    {formData.signupRole === 'student' ? (
-      <>
-        <div className={style.formGroup}>
-          <label htmlFor="firstName">First Name *</label>
-          <input
-            type="text"
-            id="firstName"
-            value={formData.firstName}
-            onChange={(e) => handleInputChange('firstName', e.target.value)}
-            placeholder="Your first name"
-            required
-            disabled={loading}
-          />
-        </div>
-        
-        <div className={style.formGroup}>
-          <label htmlFor="lastName">Last Name *</label>
-          <input
-            type="text"
-            id="lastName"
-            value={formData.lastName}
-            onChange={(e) => handleInputChange('lastName', e.target.value)}
-            placeholder="Your last name"
-            required
-            disabled={loading}
-          />
-        </div>
-      </>
-    ) : (
-      <div className={style.formGroup}>
-        <label htmlFor="signupFullName">Full Name *</label>
-        <input
-          type="text"
-          id="signupFullName"
-          value={formData.signupFullName}
-          onChange={(e) => handleInputChange('signupFullName', e.target.value)}
-          placeholder="Your full name"
-          required
-          disabled={loading}
-        />
-      </div>
-    )}
-    
-<div className={style.formGroup}>
-  <label htmlFor="signupPhone">Phone Number *</label>
-  <input
-    type="tel"
-    id="signupPhone"
-    value={formData.signupPhone}
-    onChange={(e) => {
-      // Only allow numbers
-      const numbersOnly = e.target.value.replace(/[^\d]/g, '');
-      handleInputChange('signupPhone', numbersOnly);
-    }}
-    placeholder="263771234567" // No + sign
-    required
-    disabled={loading}
-    pattern="[0-9]*" // Only numbers
-    inputMode="numeric" // Numeric keyboard on mobile
-  />
-  <small style={{color: '#666', fontSize: '12px'}}>
-    Enter numbers only (no + sign or spaces)
-  </small>
-</div>
-    
-    {/* Landlord-specific fields */}
-    {formData.signupRole === 'landlord' && (
-      <>
-        <div className={style.formGroup}>
-          <label htmlFor="companyName">Company Name</label>
-          <input
-            type="text"
-            id="companyName"
-            value={formData.companyName}
-            onChange={(e) => handleInputChange('companyName', e.target.value)}
-            placeholder="Your company or property business name"
-            disabled={loading}
-          />
-        </div>
-        
-        <div className={style.formGroup}>
-          <label htmlFor="address">Business Address</label>
-          <input
-            type="text"
-            id="address"
-            value={formData.address}
-            onChange={(e) => handleInputChange('address', e.target.value)}
-            placeholder="Your business address"
-            disabled={loading}
-          />
-        </div>
-        
-      </>
-    )}
-    
-    <div className={style.formGroup}>
-      <label htmlFor="signupRole">I am a *</label>
-      <select
-        id="signupRole"
-        value={formData.signupRole}
-        onChange={(e) => handleInputChange('signupRole', e.target.value)}
-        required
-        disabled={loading}
-        className={style.roleSelect}
-      >
-        <option value="student">🎓 Student (Looking for accommodation)</option>
-        <option value="landlord">🏠 Landlord (Listing properties)</option>
-      </select>
-    </div>
-    
-    <div className={style.formGroup}>
-      <label htmlFor="signupPassword">Password *</label>
-      <input
-        type="password"
-        id="signupPassword"
-        value={formData.signupPassword}
-        onChange={(e) => handleInputChange('signupPassword', e.target.value)}
-        placeholder="Enter password (min. 6 characters)"
-        required
-        minLength="6"
-        disabled={loading}
-      />
-    </div>
-    
-    <button 
-      type="submit" 
-      className={style.submitButton}
-      disabled={loading}
-    >
-      {loading ? (
-        <>
-          <span className={style.loadingSpinner}></span>
-          Creating Account...
-        </>
-      ) : (
-        'Create Account'
-      )}
-    </button>
-  </form>
-)}
-
             {/* Forgot Password Form */}
             {activeTab === 'forgot' && (
               <form onSubmit={handleForgotPasswordSubmit} className={style.loginForm}>
@@ -893,21 +707,9 @@ const getRoleDisplay = () => {
                   Don't have an account?{" "}
                   <span 
                     className={style.signupLink}
-                    onClick={() => setActiveTab('signup')}
+                    onClick={switchToSignup}
                   >
                     Sign up
-                  </span>
-                </p>
-              )}
-              
-              {activeTab === 'signup' && (
-                <p>
-                  Already have an account?{" "}
-                  <span 
-                    className={style.signupLink}
-                    onClick={() => setActiveTab('login')}
-                  >
-                    Login
                   </span>
                 </p>
               )}
@@ -918,7 +720,7 @@ const getRoleDisplay = () => {
                     Don't have an account?{" "}
                     <span 
                       className={style.signupLink}
-                      onClick={() => setActiveTab('signup')}
+                      onClick={switchToSignup}
                     >
                       Sign up
                     </span>
@@ -934,6 +736,218 @@ const getRoleDisplay = () => {
                   </p>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Signup Modal */}
+      {showSignupModal && (
+        <div className={style.modalOverlay}>
+          <div className={style.loginModal} ref={signupModalRef}>
+            <div className={style.modalHeader}>
+              <h2>Create Account</h2>
+              <button 
+                className={style.closeButton}
+                onClick={handleCloseSignup}
+                aria-label="Close signup modal"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            {/* Error/Success Messages */}
+            {error && (
+              <div className={style.errorMessage}>
+                <FaExclamationCircle />
+                {error}
+              </div>
+            )}
+            
+            {success && (
+              <div className={style.successMessage}>
+                {success}
+              </div>
+            )}
+            
+            {/* Signup Form */}
+            <form onSubmit={handleSignupSubmit} className={style.loginForm}>
+              <div className={style.formGroup}>
+                <label htmlFor="signupUsername">Username *</label>
+                <input
+                  type="text"
+                  id="signupUsername"
+                  value={formData.signupUsername}
+                  onChange={(e) => handleInputChange('signupUsername', e.target.value)}
+                  placeholder="Enter your username"
+                  required
+                  disabled={loading}
+                />
+              </div>
+              
+              <div className={style.formGroup}>
+                <label htmlFor="signupEmail">Email *</label>
+                <input
+                  type="email"
+                  id="signupEmail"
+                  value={formData.signupEmail}
+                  onChange={(e) => handleInputChange('signupEmail', e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                  disabled={loading}
+                />
+              </div>
+              
+              {/* Conditional Name Fields */}
+              {formData.signupRole === 'student' ? (
+                <>
+                  <div className={style.formGroup}>
+                    <label htmlFor="firstName">First Name *</label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                      placeholder="Your first name"
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                  
+                  <div className={style.formGroup}>
+                    <label htmlFor="lastName">Last Name *</label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                      placeholder="Your last name"
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className={style.formGroup}>
+                  <label htmlFor="signupFullName">Full Name *</label>
+                  <input
+                    type="text"
+                    id="signupFullName"
+                    value={formData.signupFullName}
+                    onChange={(e) => handleInputChange('signupFullName', e.target.value)}
+                    placeholder="Your full name"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+              )}
+              
+              <div className={style.formGroup}>
+                <label htmlFor="signupPhone">Phone Number *</label>
+                <input
+                  type="tel"
+                  id="signupPhone"
+                  value={formData.signupPhone}
+                  onChange={(e) => {
+                    const numbersOnly = e.target.value.replace(/[^\d]/g, '');
+                    handleInputChange('signupPhone', numbersOnly);
+                  }}
+                  placeholder="0771234567" 
+                  required
+                  disabled={loading}
+                  pattern="[0-9]*"
+                  inputMode="numeric"
+                />
+                <small style={{color: '#666', fontSize: '12px'}}>
+                  Enter numbers only (no + sign or spaces)
+                </small>
+              </div>
+              
+              {/* Landlord-specific fields */}
+              {formData.signupRole === 'landlord' && (
+                <>
+                  <div className={style.formGroup}>
+                    <label htmlFor="companyName">Company Name</label>
+                    <input
+                      type="text"
+                      id="companyName"
+                      value={formData.companyName}
+                      onChange={(e) => handleInputChange('companyName', e.target.value)}
+                      placeholder="Your company or property business name"
+                      disabled={loading}
+                    />
+                  </div>
+                  
+                  <div className={style.formGroup}>
+                    <label htmlFor="address">Business Address</label>
+                    <input
+                      type="text"
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) => handleInputChange('address', e.target.value)}
+                      placeholder="Your business address"
+                      disabled={loading}
+                    />
+                  </div>
+                </>
+              )}
+              
+              <div className={style.formGroup}>
+                <label htmlFor="signupRole">I am a *</label>
+                <select
+                  id="signupRole"
+                  value={formData.signupRole}
+                  onChange={(e) => handleInputChange('signupRole', e.target.value)}
+                  required
+                  disabled={loading}
+                  className={style.roleSelect}
+                >
+                  <option value="student">🎓 Student (Looking for accommodation)</option>
+                  <option value="landlord">🏠 Landlord (Listing properties)</option>
+                </select>
+              </div>
+              
+              <div className={style.formGroup}>
+                <label htmlFor="signupPassword">Password *</label>
+                <input
+                  type="password"
+                  id="signupPassword"
+                  value={formData.signupPassword}
+                  onChange={(e) => handleInputChange('signupPassword', e.target.value)}
+                  placeholder="Enter password (min. 6 characters)"
+                  required
+                  minLength="6"
+                  disabled={loading}
+                />
+              </div>
+              
+              <button 
+                type="submit" 
+                className={style.submitButton}
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className={style.loadingSpinner}></span>
+                    Creating Account...
+                  </>
+                ) : (
+                  'Create Account'
+                )}
+              </button>
+            </form>
+            
+            {/* Form Footer Links */}
+            <div className={style.modalFooter}>
+              <p>
+                Already have an account?{" "}
+                <span 
+                  className={style.signupLink}
+                  onClick={switchToLogin}
+                >
+                  Login
+                </span>
+              </p>
             </div>
           </div>
         </div>

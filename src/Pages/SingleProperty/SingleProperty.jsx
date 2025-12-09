@@ -1,3 +1,4 @@
+// pages/SingleProperty.jsx
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client/react';
@@ -5,12 +6,14 @@ import style from '../../Styles/pages/SingleProperty.module.css';
 import { GET_PROPERTY_DETAILS } from './Sinlgle';
 import { 
   FaBed, FaBath, FaRulerCombined, FaWifi, FaShieldAlt, FaSwimmingPool, 
-  FaParking, FaUtensils, FaSun, FaGasPump, FaTint, FaBook, FaMapMarkerAlt,
-  FaPhone, FaEnvelope, FaHeart, FaRegHeart, FaShoppingCart, FaCartPlus,
-  FaStar, FaShare, FaSignInAlt, FaLock, FaThumbsUp, FaRegThumbsUp
+  FaParking, FaUtensils, FaSun, FaTint, FaBook, FaMapMarkerAlt,
+  FaPhone, FaEnvelope, FaShoppingCart, FaCartPlus, FaSignInAlt, 
+  FaLock, FaThumbsUp, FaRegThumbsUp, FaFire
 } from 'react-icons/fa';
 import { useAuth } from '../../Contexts/AuthContext';
 import { useApp } from '../../Contexts/AppContext';
+import ContactButtons from '../../Components/Common/ContactButtons';
+import EnhancedVideoShowcase from '../../Components/Ui/modal/Vedio';
 
 const API_BASE_URL = 'http://localhost:1337';
 
@@ -20,9 +23,7 @@ export default function SingleProperty() {
   
   const { user, getUserRole } = useAuth();
   const { 
-    isFavorite, 
     isInShortlist, 
-    toggleFavorite, 
     addToShortlist, 
     removeFromShortlist,
     createInquiry,
@@ -102,17 +103,7 @@ export default function SingleProperty() {
     variables: { documentId: id }
   });
 
-  // 🔥 DEBUG: Add this to see what data we're getting
-  React.useEffect(() => {
-    if (data) {
-      console.log('🔍 DEBUG: Full property data:', data);
-      console.log('🔍 DEBUG: Landlord object:', data?.accommodation?.landlord);
-      console.log('🔍 DEBUG: Landlord ID:', data?.accommodation?.landlord?.documentId);
-      console.log('🔍 DEBUG: Landlord name:', data?.accommodation?.landlord?.fullName);
-    }
-  }, [data]);
-
-  // NEW: Like handler
+  // Like handler
   const handleLike = async () => {
     if (!user) {
       setShowLoginPrompt(true);
@@ -126,20 +117,6 @@ export default function SingleProperty() {
     } catch (error) {
       console.error('Error liking property:', error);
     }
-  };
-
-  const handleFavorite = () => {
-    if (!user) {
-      setShowLoginPrompt(true);
-      return;
-    }
-    const property = data?.accommodation;
-    if (!property) return;
-    
-    toggleFavorite({ 
-      id: property.documentId, 
-      name: property.name || property.location?.Address 
-    });
   };
 
   const handleShortlist = () => {
@@ -163,7 +140,6 @@ export default function SingleProperty() {
       return;
     }
     
-    // FIXED: Check if user is a student
     const userRole = getUserRole();
     if (userRole !== 'student' && !user.student) {
       alert('Only students can book viewing appointments. Please use a student account.');
@@ -173,22 +149,18 @@ export default function SingleProperty() {
     setShowBookingForm(true);
   };
   
-  // 🔥 FIXED: Complete booking submission with proper error handling
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     
     try {
       const property = data?.accommodation;
-      console.log('📤 Sending inquiry for property:', property);
 
-      // Validate phone number
       const phoneError = validatePhoneNumber(bookingData.phone);
       if (phoneError) {
         setPhoneError(phoneError);
         return;
       }
 
-      // 🔥 FIXED: Simplified inquiry data - no landlord targeting
       const inquiryData = {
         propertyId: property.documentId,
         propertyName: property.name,
@@ -198,8 +170,6 @@ export default function SingleProperty() {
         message: bookingData.message,
         preferredDate: bookingData.date,
       };
-
-      console.log('📝 Final inquiry data (NO LANDLORD TARGETING):', inquiryData);
 
       const result = await createInquiry(inquiryData);
 
@@ -214,12 +184,11 @@ export default function SingleProperty() {
           date: '',
           message: ''
         });
-        console.log('✅ Inquiry sent successfully to property:', property.documentId);
       } else {
         alert(`Failed to send inquiry: ${result.error}`);
       }
     } catch (error) {
-      console.error('❌ Booking error:', error);
+      console.error('Booking error:', error);
       alert('Failed to send inquiry. Please try again.');
     }
   };
@@ -271,14 +240,6 @@ export default function SingleProperty() {
   const property = data?.accommodation;
   if (!property) return <div className={style.error}>Property not found</div>;
 
-  // 🔥 DEBUG: Log the final property data
-  console.log('🎯 Final property data for rendering:', {
-    id: property.documentId,
-    name: property.name,
-    landlord: property.landlord,
-    landlordId: property.landlord?.documentId
-  });
-
   const getImageUrl = (url) => (url ? `${API_BASE_URL}${url}` : '');
   const coverImage = property.media?.CoverImage;
   const galleryImages = property.media?.Gallery || [];
@@ -286,6 +247,21 @@ export default function SingleProperty() {
   const allImages = [coverImage, ...galleryImages].filter(Boolean);
   const isLiked = isPropertyLiked(property.documentId);
   const likes = property.likes || 0;
+  
+  // Debug log for video data
+  console.log('=== VIDEO DEBUG LOG ===');
+  console.log('Full property data:', property);
+  console.log('Media object:', property.media);
+  console.log('ShowCase directly:', property.media?.ShowCase);
+  console.log('ShowCase URL:', property.media?.ShowCase?.url);
+  console.log('ShowCase alternativeText:', property.media?.ShowCase?.alternativeText);
+  console.log('=== END DEBUG LOG ===');
+
+  // Also log the raw GraphQL response
+  if (data) {
+    console.log('GraphQL response data:', data);
+    console.log('Accommodation data structure:', data.accommodation);
+  }
 
   const generateDescription = () => {
     const { details, location } = property;
@@ -318,7 +294,7 @@ export default function SingleProperty() {
       available: property.details?.Facilities?.solar || false 
     },
     { 
-      icon: FaGasPump, 
+      icon: FaFire, 
       label: 'Gas', 
       available: property.details?.Facilities?.gas || false 
     },
@@ -335,7 +311,7 @@ export default function SingleProperty() {
     { 
       icon: FaSwimmingPool, 
       label: 'Swimming Pool', 
-      available: property.details?.Facilities?.SwimmingPool || false 
+      available: property.details?.Facilities?.SwimmingPool || false
     },
     { 
       icon: FaParking, 
@@ -356,14 +332,12 @@ export default function SingleProperty() {
 
   return (
     <div className={style.SinglePropertyBody}>
-      {/* Success Message */}
       {showSuccess && (
         <div className={style.successMessage}>
           ✅ Inquiry sent successfully! The landlord will contact you soon.
         </div>
       )}
 
-      {/* Authentication Badge */}
       {user && (
         <div className={style.AuthBadge}>
           <span>Welcome, {user.username || user.email}! </span>
@@ -377,7 +351,6 @@ export default function SingleProperty() {
         </div>
       )}
 
-      {/* Image Gallery */}
       <section className={style.ImageGallery}>
         <div className={style.MainImage}>
           <img 
@@ -407,7 +380,6 @@ export default function SingleProperty() {
         </div>
       </section>
 
-      {/* Property Details */}
       <section className={style.Details}>
         <div className={style.PropertyHeader}>
           <div className={style.HeaderLeft}>
@@ -415,20 +387,7 @@ export default function SingleProperty() {
             <p className={style.Address}>
               <FaMapMarkerAlt /> {property.location?.Address}, {property.location?.City}
             </p>
-            <div className={style.Rating}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <FaStar key={star} className={style.Star} />
-              ))}
-              <span>(24 reviews)</span>
-            </div>
-            {/* NEW: Likes display */}
-            {likes > 0 && (
-              <div className={style.LikesCount}>
-                <FaThumbsUp />
-                <span>{likes} likes</span>
-              </div>
-            )}
-            {/* Property Owner Info */}
+            
             {property.landlord && (
               <div className={style.LandlordInfo}>
                 <small>Listed by: {property.landlord.fullName || property.landlord.users_permissions_user?.username || 'Landlord'}</small>
@@ -443,7 +402,6 @@ export default function SingleProperty() {
               ${property.details?.price}/month
             </div>
             <div className={style.ActionButtons}>
-              {/* NEW: Like button */}
               <button 
                 className={style.IconButton}
                 onClick={handleLike}
@@ -455,29 +413,17 @@ export default function SingleProperty() {
               </button>
               <button 
                 className={style.IconButton}
-                onClick={handleFavorite}
-                aria-label={isFavorite(property.documentId) ? 'Remove from favorites' : 'Add to favorites'}
-                disabled={isPropertyOwner}
-              >
-                {isFavorite(property.documentId) ? <FaHeart color="red" /> : <FaRegHeart />}
-              </button>
-              <button 
-                className={style.IconButton}
                 onClick={handleShortlist}
                 aria-label={isInShortlist(property.documentId) ? 'Remove from shortlist' : 'Add to shortlist'}
                 disabled={isPropertyOwner}
               >
                 {isInShortlist(property.documentId) ? <FaShoppingCart color="green" /> : <FaCartPlus />}
               </button>
-              <button className={style.IconButton}>
-                <FaShare />
-              </button>
             </div>
           </div>
         </div>
 
         <div className={style.DetailsGrid}>
-          {/* Basic Info */}
           <div className={style.info}>
             <h2>Property Details</h2>
             <p>{generateDescription()}</p>
@@ -499,7 +445,6 @@ export default function SingleProperty() {
                 <FaMapMarkerAlt />
                 <span>{property.details?.distance}km from campus</span>
               </div>
-              {/* NEW: Likes in features */}
               {likes > 0 && (
                 <div className={style.Feature}>
                   <FaThumbsUp />
@@ -516,7 +461,6 @@ export default function SingleProperty() {
             </div>
           </div>
 
-          {/* Facilities - IMPROVED WITH AVAILABILITY STATUS */}
           <div className={style.facilities}>
             <h2>Facilities & Amenities</h2>
             <div className={style.FacilitiesGrid}>
@@ -538,7 +482,6 @@ export default function SingleProperty() {
             </div>
           </div>
 
-          {/* Contact & Booking */}
           <div className={style.addresses}>
             <h2>Contact & Booking</h2>
             <div className={style.ContactInfo}>
@@ -558,7 +501,6 @@ export default function SingleProperty() {
               {property.details?.isFull ? 'Currently Unavailable' : 'Book Viewing Appointment'}
             </button>
 
-            {/* 🔥 NEW: Landlord contact info if available */}
             {property.landlord && (
               <div className={style.LandlordContact}>
                 <h3>Property Owner</h3>
@@ -569,42 +511,85 @@ export default function SingleProperty() {
                 {property.landlord.users_permissions_user?.email && (
                   <p><strong>Email:</strong> {property.landlord.users_permissions_user.email}</p>
                 )}
+                
+                {user && (
+                  <ContactButtons
+                    user={user}
+                    recipient={{
+                      email: property.landlord.users_permissions_user?.email,
+                      phone: property.landlord.phoneNumber
+                    }}
+                    property={{
+                      id: property.documentId,
+                      name: property.name
+                    }}
+                  />
+                )}
               </div>
             )}
           </div>
         </div>
       </section>
 
-      {/* Rooms Section */}
+      {/* Room Photos Section */}
       {roomImages.length > 0 && (
         <section className={style.Rooms}>
-          <h2>Room Photos</h2>
+          <h2>Room Photos ({roomImages.length})</h2>
           <div className={style.RoomsGrid}>
             {roomImages.map((room, index) => (
-              <div key={index} className={style.RoomImage}>
-                <img 
-                  src={getImageUrl(room.url)} 
-                  alt={room.alternativeText || `Room ${index + 1}`}
-                  onError={(e) => {
-                    e.target.src = '/default-property.jpg';
-                  }}
-                />
+              <div key={index} className={style.RoomCard}>
+                <div className={style.RoomPin}>
+                  <span className={style.RoomNumber}>{index + 1}</span>
+                </div>
+                <div className={style.RoomImageContainer}>
+                  <img 
+                    className={style.RoomImage}
+                    src={getImageUrl(room.url)} 
+                    alt={room.alternativeText || `Room ${index + 1}`}
+                    onError={(e) => {
+                      e.target.src = '/default-property.jpg';
+                    }}
+                  />
+                </div>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* Video Container */}
-      <div className={style.VideoContainer}>
-        <h2>Virtual Tour</h2>
-        <div className={style.VideoPlaceholder}>
-          <p>Virtual tour video coming soon</p>
-          <button className={style.VideoButton}>Request Video Tour</button>
+      {/* Virtual Tour Section - FIXED */}
+      <section className={style.VirtualTourSection}>
+        <div className={style.SectionHeader}>
+          <h2><span className={style.SectionIcon}>🎥</span> Virtual Tour</h2>
+          <p className={style.SectionSubtitle}>
+            Take a virtual walkthrough of this property
+          </p>
         </div>
-      </div>
+        
+        <div className={style.VideoContent}>
+          <EnhancedVideoShowcase showCaseData={property.media?.ShowCase} />
+        </div>
+        
+        {/* Additional Info - Only show if we have a video */}
+        {property.media?.ShowCase?.url && (
+          <div className={style.VideoInfo}>
+            <h3>About This Tour</h3>
+            <ul>
+              <li>360° view of all rooms and facilities</li>
+              <li>See the property layout and space</li>
+              <li>No need to physically visit for initial screening</li>
+              <li>Available 24/7 for your convenience</li>
+            </ul>
+            {property.media?.ShowCase?.alternativeText && (
+              <div className={style.VideoDescription}>
+                <strong>Description:</strong> {property.media.ShowCase.alternativeText}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
 
-      {/* Contact Information */}
+      {/* Contact Information Section */}
       <section className={style.SinglePropertyContactInfo}>
         <h2>Get in Touch</h2>
         <div className={style.ContactGrid}>
@@ -629,7 +614,7 @@ export default function SingleProperty() {
         </div>
       </section>
 
-      {/* Booking Modal */}
+      {/* Booking Form Modal */}
       {showBookingForm && (
         <div className={style.ModalOverlay}>
           <div className={style.Modal}>

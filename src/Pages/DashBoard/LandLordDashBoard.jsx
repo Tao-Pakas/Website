@@ -4,15 +4,23 @@ import {
   FaHome, FaPlus, FaEdit, FaTrash, FaEye, FaChartLine,
   FaDollarSign, FaBell, FaCheckCircle,
   FaClock, FaExclamationTriangle, FaEnvelope,
-  FaMapMarkerAlt, FaThumbsUp, FaHeart,FaPhone
+  FaMapMarkerAlt, FaThumbsUp, FaHeart, FaPhone,
+  FaCalendarAlt
 } from 'react-icons/fa';
 import style from '../../Styles/pages/LandLordDash.module.css';
 import { useApp } from '../../Contexts/AppContext';
 import { useAuth } from '../../Contexts/AuthContext';
 import AddPropertyModal from '../../Hooks/AddPropertyModal';
 import EditPropertyModal from '../../Hooks/EditPropertyModal';
+import { Link } from 'react-router-dom';
 
+/**
+ * Landlord Dashboard Component
+ * Comprehensive dashboard for landlords to manage properties, track performance,
+ * and handle student inquiries
+ */
 export default function LandlordDashboard() {
+  // Context hooks for user authentication and application state
   const { user } = useAuth();
   const navigate = useNavigate();
   const { 
@@ -27,36 +35,37 @@ export default function LandlordDashboard() {
     refreshInquiries
   } = useApp();
   
-  // State management
-  const [activeTab, setActiveTab] = useState('overview');
-  const [showAddPropertyForm, setShowAddPropertyForm] = useState(false);
-  const [showEditPropertyForm, setShowEditPropertyForm] = useState(false);
-  const [editingProperty, setEditingProperty] = useState(null);
-  const [inquiries, setInquiries] = useState([]);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [newInquiriesCount, setNewInquiriesCount] = useState(0);
-  const [replyingTo, setReplyingTo] = useState(null);
-  const [replyMessage, setReplyMessage] = useState('');
-  const [inquiryFilter, setInquiryFilter] = useState('all'); 
+  // Component state management
+  const [activeTab, setActiveTab] = useState('overview');           // Currently active dashboard tab
+  const [showAddPropertyForm, setShowAddPropertyForm] = useState(false); // Add property modal visibility
+  const [showEditPropertyForm, setShowEditPropertyForm] = useState(false); // Edit property modal visibility
+  const [editingProperty, setEditingProperty] = useState(null);     // Property being edited
+  const [showSuccess, setShowSuccess] = useState(false);            // Success message visibility
+  const [isLoading, setIsLoading] = useState(false);                // Loading state for operations
+  const [newInquiriesCount, setNewInquiriesCount] = useState(0);    // Count of new/unread inquiries
+  const [replyingTo, setReplyingTo] = useState(null);               // Inquiry ID being replied to
+  const [replyMessage, setReplyMessage] = useState('');             // Reply message content
+  const [showDatePicker, setShowDatePicker] = useState(false);      // Date picker visibility
+  const [selectedDate, setSelectedDate] = useState('');             // Selected date from calendar
   
-  // Stats state
+  // Dashboard statistics state
   const [stats, setStats] = useState({
-    totalProperties: 0,
-    activeListings: 0,
-    pendingListings: 0,
-    totalViews: 0,
-    totalFavorites: 0,
-    totalLikes: 0,
-    monthlyRevenue: 0,
-    occupancyRate: 0
+    totalProperties: 0,     // Total number of properties listed
+    activeListings: 0,      // Number of active property listings
+    pendingListings: 0,     // Number of pending property listings
+    totalViews: 0,          // Total views across all properties
+    totalFavorites: 0,      // Total favorites across all properties
+    totalLikes: 0,          // Total likes across all properties
+    monthlyRevenue: 0,      // Estimated monthly revenue from properties
+    occupancyRate: 0        // Occupancy rate percentage
   });
 
   // Get landlord properties from context
   const landlordProperties = userAccommodations || [];
 
   /**
-   * Update stats when user accommodations change
+   * Update dashboard statistics when user accommodations change
+   * Calculates various metrics for the overview dashboard
    */
   useEffect(() => {
     if (userAccommodations) {
@@ -65,7 +74,8 @@ export default function LandlordDashboard() {
   }, [userAccommodations]);
 
   /**
-   * Calculate and update dashboard statistics
+   * Calculate and update comprehensive dashboard statistics
+   * @param {Array} listingsData - Array of property listings
    */
   const updateStats = (listingsData) => {
     const totalProperties = listingsData.length;
@@ -74,9 +84,13 @@ export default function LandlordDashboard() {
     const totalViews = listingsData.reduce((sum, listing) => sum + (listing.views || 0), 0);
     const totalFavorites = listingsData.reduce((sum, listing) => sum + (listing.favorites || 0), 0);
     const totalLikes = listingsData.reduce((sum, listing) => sum + (listing.likes || 0), 0);
+    
+    // Calculate monthly revenue from active, available properties
     const monthlyRevenue = listingsData
       .filter(l => (l.status === 'active' || !l.status) && !l.details?.isFull)
       .reduce((sum, listing) => sum + (parseFloat(listing.details?.price) || 0), 0);
+    
+    // Calculate occupancy rate (percentage of full properties)
     const occupancyRate = totalProperties > 0 ? 
       ((listingsData.filter(l => l.details?.isFull).length / totalProperties) * 100).toFixed(1) : 0;
 
@@ -93,7 +107,8 @@ export default function LandlordDashboard() {
   };
 
   /**
-   * Handle adding new property
+   * Handle creation of new property listing
+   * @param {Object} propertyData - Property data from form
    */
   const handleAddProperty = async (propertyData) => {
     try {
@@ -108,13 +123,13 @@ export default function LandlordDashboard() {
         alert(`Failed to create property: ${result.error}`);
       }
     } catch (error) {
-      console.error('Error in handleAddProperty:', error);
       alert('Failed to create property. Please try again.');
     }
   };
 
   /**
-   * Handle editing property
+   * Prepare property for editing by opening edit modal
+   * @param {Object} property - Property object to edit
    */
   const handleEditProperty = (property) => {
     setEditingProperty(property);
@@ -122,7 +137,9 @@ export default function LandlordDashboard() {
   };
 
   /**
-   * Handle updating property
+   * Handle updating existing property listing
+   * @param {string} propertyId - ID of property to update
+   * @param {Object} propertyData - Updated property data
    */
   const handleUpdateProperty = async (propertyId, propertyData) => {
     try {
@@ -138,13 +155,13 @@ export default function LandlordDashboard() {
         alert(`Failed to update property: ${result.error}`);
       }
     } catch (error) {
-      console.error('Error in handleUpdateProperty:', error);
       alert('Failed to update property. Please try again.');
     }
   };
 
   /**
-   * Handle deleting property
+   * Handle deletion of property listing with confirmation
+   * @param {string} listingId - ID of property to delete
    */
   const handleDeleteListing = async (listingId) => {
     if (window.confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
@@ -159,35 +176,31 @@ export default function LandlordDashboard() {
           alert(`Failed to delete property: ${result.error}`);
         }
       } catch (error) {
-        console.error('Error deleting property:', error);
         alert('Failed to delete property. Please try again.');
       }
     }
   };
 
   /**
-   * Process landlord inquiries - FIXED VERSION
+   * Process landlord inquiries and count new/unread ones
+   * Updates notification badge count
    */
-useEffect(() => {
-  console.log('🔄 Processing landlord inquiries in dashboard:', landlordInquiries);
-  
-  if (landlordInquiries && landlordInquiries.length > 0) {
-    console.log('✅ landlordInquiries available:', landlordInquiries.length, 'inquiries');
-    
-    // Count new inquiries (state === 'unread')
-    const newInquiries = landlordInquiries.filter(inquiry => 
-      inquiry.state === 'unread'
-    ).length;
-    
-    console.log(`📊 Stats - Total: ${landlordInquiries.length}, New: ${newInquiries}`);
-    setNewInquiriesCount(newInquiries);
-  } else {
-    console.log('📭 No landlord inquiries found in dashboard');
-    setNewInquiriesCount(0);
-  }
-}, [landlordInquiries]);
+  useEffect(() => {
+    if (landlordInquiries && landlordInquiries.length > 0) {
+      // Count new inquiries (state === 'unread')
+      const newInquiries = landlordInquiries.filter(inquiry => 
+        inquiry.state === 'unread'
+      ).length;
+      
+      setNewInquiriesCount(newInquiries);
+    } else {
+      setNewInquiriesCount(0);
+    }
+  }, [landlordInquiries]);
 
-  // Refresh inquiries when user changes
+  /**
+   * Refresh inquiries data when user changes
+   */
   useEffect(() => {
     if (user && user.id) {
       refreshInquiries?.();
@@ -195,7 +208,9 @@ useEffect(() => {
   }, [user, refreshInquiries]);
 
   /**
-   * Handle updating inquiry state
+   * Handle updating inquiry state (mark as read, in progress, done)
+   * @param {string} inquiryId - ID of inquiry to update
+   * @param {Object} updates - State updates to apply
    */
   const handleUpdateInquiry = async (inquiryId, updates) => {
     try {
@@ -207,13 +222,13 @@ useEffect(() => {
         alert(`Failed to update inquiry: ${result.error}`);
       }
     } catch (error) {
-      console.error('Error updating inquiry:', error);
       alert('Failed to update inquiry. Please try again.');
     }
   };
 
   /**
-   * Handle replying to inquiry
+   * Handle replying to student inquiry with optional date suggestion
+   * @param {string} inquiryId - ID of inquiry to reply to
    */
   const handleReply = async (inquiryId) => {
     if (!replyMessage.trim()) {
@@ -222,51 +237,47 @@ useEffect(() => {
     }
 
     try {
-      const result = await updateInquiry(inquiryId, {
+      const updates = {
         state: 'in_progress',
         landlordReply: replyMessage
-      });
+      };
+
+      // Include counter date if selected
+      if (selectedDate) {
+        updates.counterDate = selectedDate;
+      }
+
+      const result = await updateInquiry(inquiryId, updates);
       
       if (result.success) {
         alert('Reply sent to student!');
         setReplyingTo(null);
         setReplyMessage('');
+        setSelectedDate('');
+        setShowDatePicker(false);
         await refreshInquiries();
       } else {
         alert('Failed to send reply: ' + result.error);
       }
     } catch (error) {
-      console.error('Error sending reply:', error);
       alert('Failed to send reply. Please try again.');
     }
   };
 
   /**
-   * Handle suggesting new date for inquiry
+   * Handle suggesting alternative date for viewing
+   * Opens date picker modal instead of native prompt
+   * @param {string} inquiryId - ID of inquiry to update
    */
-  const handleSuggestDate = async (inquiryId) => {
-    const newDate = prompt('Suggest a new date (YYYY-MM-DD):', '');
-    if (newDate) {
-      const reply = prompt('Enter your message with the suggested date:', '');
-      if (reply) {
-        const result = await updateInquiry(inquiryId, {
-          state: 'in_progress',
-          landlordReply: reply,
-          counterDate: newDate
-        });
-        
-        if (result.success) {
-          alert('Suggested date sent to student!');
-          await refreshInquiries();
-        } else {
-          alert('Failed to suggest date: ' + result.error);
-        }
-      }
-    }
+  const handleSuggestDate = (inquiryId) => {
+    setReplyingTo(inquiryId);
+    setShowDatePicker(true);
+    setReplyMessage(''); // Clear any existing reply message
   };
 
   /**
-   * Handle marking inquiry as done
+   * Handle marking inquiry as completed
+   * @param {string} inquiryId - ID of inquiry to mark as done
    */
   const handleMarkAsDone = async (inquiryId) => {
     const result = await updateInquiry(inquiryId, {
@@ -282,22 +293,9 @@ useEffect(() => {
   };
 
   /**
-   * Handle deleting inquiry
-   */
-  const handleDeleteInquiry = async (inquiryId) => {
-    if (window.confirm('Are you sure you want to delete this inquiry?')) {
-      // Note: You might need to implement deleteInquiry function in your context
-      // For now, we'll just remove it from local state
-      setInquiries(prev => prev.filter(inquiry => {
-        const id = inquiry.documentId || inquiry.id;
-        return id !== inquiryId;
-      }));
-      alert('Inquiry deleted locally. Implement backend deletion if needed.');
-    }
-  };
-
-  /**
-   * Get status badge for property
+   * Create status badge for property listings
+   * @param {string} status - Property status (active, pending, rejected)
+   * @returns {JSX} Styled status badge component
    */
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -317,7 +315,9 @@ useEffect(() => {
   };
 
   /**
-   * Get status badge for inquiry
+   * Create status badge for inquiries
+   * @param {string} state - Inquiry state (unread, in-progress, done)
+   * @returns {JSX} Styled inquiry status badge component
    */
   const getInquiryStatusBadge = (state) => {
     const statusConfig = {
@@ -336,7 +336,33 @@ useEffect(() => {
     );
   };
 
-  // Quick stats for overview
+  /**
+   * Format image URL for display
+   * Handles both absolute URLs and relative paths
+   * @param {string} url - Image URL from backend
+   * @returns {string} Formatted image URL
+   */
+  const formatImageUrl = (url) => {
+    if (!url) return '/default-property.jpg';
+    
+    // If URL already has http/https, return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // If URL starts with /uploads, prepend backend URL
+    if (url.startsWith('/uploads')) {
+      return `http://localhost:1337${url}`;
+    }
+    
+    // Return default image for invalid URLs
+    return '/default-property.jpg';
+  };
+
+  /**
+   * Quick stats configuration for dashboard overview
+   * Each stat card shows key metrics with trends
+   */
   const quickStats = [
     {
       title: 'Total Properties',
@@ -372,7 +398,10 @@ useEffect(() => {
     }
   ];
 
-  // Check if user is a landlord
+  /**
+   * Check if user has landlord permissions
+   * Redirects non-landlord users to appropriate dashboard
+   */
   if (user && (user.role?.name !== 'landlord' && !user.landlord)) {
     return (
       <div className={style.accessDenied}>
@@ -401,7 +430,7 @@ useEffect(() => {
 
   return (
     <div className={style.LandlordDashboard}>
-      {/* Success Message */}
+      {/* Success Notification Toast */}
       {showSuccess && (
         <div className={style.successMessage}>
           <FaCheckCircle />
@@ -409,7 +438,7 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Loading State */}
+      {/* Loading Overlay */}
       {(isLoading || contextLoading) && (
         <div className={style.loadingState}>
           <div className={style.loadingSpinner}></div>
@@ -437,8 +466,55 @@ useEffect(() => {
           onSave={handleUpdateProperty}
         />
       )}
+
+      {/* Date Picker Modal for Suggesting New Dates */}
+      {showDatePicker && (
+        <div className={style.datePickerModal}>
+          <div className={style.datePickerContent}>
+            <h3>📅 Select Suggested Date</h3>
+            <p>Choose a new date to suggest to the student:</p>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+              className={style.dateInput}
+            />
+            <div className={style.datePickerActions}>
+              <button
+                onClick={() => {
+                  setShowDatePicker(false);
+                  setSelectedDate('');
+                }}
+                className={style.cancelButton}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (selectedDate) {
+                    setShowDatePicker(false);
+                    // Auto-populate reply message with date suggestion
+                    const formattedDate = new Date(selectedDate).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    });
+                    setReplyMessage(`I'd like to suggest ${formattedDate} as an alternative viewing date. Would this work for you?`);
+                  }
+                }}
+                className={style.confirmButton}
+                disabled={!selectedDate}
+              >
+                Confirm Date
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
-      {/* Dashboard Header */}
+      {/* Dashboard Header Section */}
       <div className={style.dashboardHeader}>
         <div className={style.headerContent}>
           <h1>Landlord Dashboard</h1>
@@ -462,7 +538,7 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Tab Navigation */}
+      {/* Tab Navigation Bar */}
       <div className={style.tabNavigation}>
         <button 
           className={`${style.tab} ${activeTab === 'overview' ? style.activeTab : ''}`}
@@ -487,12 +563,12 @@ useEffect(() => {
         </button>
       </div>
 
-      {/* Main Content */}
+      {/* Main Dashboard Content Area */}
       <div className={style.dashboardContent}>
-        {/* Overview Tab */}
+        {/* Overview Tab - Dashboard Home with Quick Stats */}
         {activeTab === 'overview' && (
           <div className={style.overviewGrid}>
-            {/* Quick Stats */}
+            {/* Quick Stats Cards Section */}
             <div className={style.statsGrid}>
               {quickStats.map((stat, index) => (
                 <div key={index} className={style.statCard}>
@@ -510,7 +586,7 @@ useEffect(() => {
               ))}
             </div>
 
-            {/* Quick Actions */}
+            {/* Quick Actions Section - Dashboard Shortcuts */}
             <div className={style.quickActions}>
               <h2>Quick Actions</h2>
               <div className={style.actionGrid}>
@@ -541,7 +617,7 @@ useEffect(() => {
           </div>
         )}
 
-        {/* Properties Tab */}
+        {/* Properties Tab - Manage Property Listings */}
         {activeTab === 'properties' && (
           <div className={style.propertiesTab}>
             <div className={style.tabHeader}>
@@ -563,11 +639,12 @@ useEffect(() => {
               </div>
             ) : (
               <div className={style.propertiesGrid}>
+                {/* Property Listing Cards */}
                 {landlordProperties.map(listing => (
                   <div key={listing.id} className={style.propertyCard}>
                     <div className={style.propertyImage}>
                       <img 
-                        src={listing.media?.CoverImage?.url || '/default-property.jpg'} 
+                        src={formatImageUrl(listing.media?.CoverImage?.url)}
                         alt={listing.name} 
                         onError={(e) => {
                           e.target.src = '/default-property.jpg';
@@ -578,6 +655,7 @@ useEffect(() => {
                       </div>
                     </div>
 
+                    {/* Property Metrics Bar */}
                     <div className={style.propertyMetrics}>
                       <div className={style.metric}>
                         <FaEye />
@@ -593,6 +671,7 @@ useEffect(() => {
                       </div>
                     </div>
                     
+                    {/* Property Information Section */}
                     <div className={style.propertyInfo}>
                       <h3>{listing.name}</h3>
                       <p className={style.propertyAddress}>
@@ -611,6 +690,7 @@ useEffect(() => {
                         </div>
                       </div>
                       
+                      {/* Property Action Buttons */}
                       <div className={style.propertyActions}>
                         <button 
                           className={style.editBtn}
@@ -620,14 +700,14 @@ useEffect(() => {
                           <FaEdit />
                           Edit
                         </button>
-                        <button 
-                          className={style.viewBtn}
-                          onClick={() => navigate(`/property/${listing.id}`)}
+                        <Link 
+                          to={`/Single/${listing.id}`}
+                          className={`${style.viewBtn} ${style.linkButton}`}
                           title="View property details"
                         >
                           <FaEye />
                           View
-                        </button>
+                        </Link>
                         <button 
                           className={style.deleteBtn}
                           onClick={() => handleDeleteListing(listing.id)}
@@ -641,6 +721,7 @@ useEffect(() => {
                   </div>
                 ))}
                 
+                {/* Empty State for Properties */}
                 {landlordProperties.length === 0 && !isLoading && (
                   <div className={style.emptyState}>
                     <FaHome className={style.emptyIcon} />
@@ -660,285 +741,309 @@ useEffect(() => {
           </div>
         )}
 
-        {/* Inquiries Tab - FIXED VERSION */}
-{activeTab === 'inquiries' && (
-  <div className={style.inquiriesTab}>
-    <div className={style.tabHeader}>
-      <h2>Property Inquiries</h2>
-      <div className={style.inquiryStats}>
-        <span className={style.totalInquiries}>
-          Total Inquiries: {landlordInquiries?.length || 0}
-        </span>
-        <span className={style.newInquiries}>
-          New: {landlordInquiries?.filter(inq => inq.state === 'unread').length || 0}
-        </span>
-      </div>
-    </div>
+        {/* Inquiries Tab - Manage Student Inquiries */}
+        {activeTab === 'inquiries' && (
+          <div className={style.inquiriesTab}>
+            <div className={style.tabHeader}>
+              <h2>Property Inquiries</h2>
+              <div className={style.inquiryStats}>
+                <span className={style.totalInquiries}>
+                  Total Inquiries: {landlordInquiries?.length || 0}
+                </span>
+                <span className={style.newInquiries}>
+                  New: {landlordInquiries?.filter(inq => inq.state === 'unread').length || 0}
+                </span>
+              </div>
+            </div>
 
-    <div className={style.inquiriesList}>
-      {/* DIRECTLY USE landlordInquiries FROM CONTEXT - NOW IT'S EXTRACTED INQUIRIES */}
-      {landlordInquiries && landlordInquiries.length > 0 ? (
-        // Group inquiries by property for better organization
-        (() => {
-          // Group inquiries by property
-          const inquiriesByProperty = {};
-          landlordInquiries.forEach(inquiry => {
-            const propertyId = inquiry.accommodation?.id || 'unknown';
-            if (!inquiriesByProperty[propertyId]) {
-              inquiriesByProperty[propertyId] = {
-                property: inquiry.accommodation,
-                inquiries: []
-              };
-            }
-            inquiriesByProperty[propertyId].inquiries.push(inquiry);
-          });
+            <div className={style.inquiriesList}>
+              {/* Display Inquiries Grouped by Property */}
+              {landlordInquiries && landlordInquiries.length > 0 ? (
+                // Group inquiries by property for better organization
+                (() => {
+                  const inquiriesByProperty = {};
+                  landlordInquiries.forEach(inquiry => {
+                    const propertyId = inquiry.accommodation?.id || 'unknown';
+                    if (!inquiriesByProperty[propertyId]) {
+                      inquiriesByProperty[propertyId] = {
+                        property: inquiry.accommodation,
+                        inquiries: []
+                      };
+                    }
+                    inquiriesByProperty[propertyId].inquiries.push(inquiry);
+                  });
 
-          return Object.values(inquiriesByProperty).map(({ property, inquiries }) => {
-            const propertyName = property?.name || 'Unnamed Property';
-            const propertyLocation = property?.location ? 
-              `${property.location.Address}, ${property.location.City}` : 
-              'Location not specified';
-
-            return (
-              <div key={property?.id} className={style.propertyInquiriesSection}>
-                {/* Property Header */}
-                <div className={style.propertyHeader}>
-                  <div className={style.propertyInfo}>
-                    <h3>{propertyName}</h3>
-                    <p className={style.propertyAddress}>📍 {propertyLocation}</p>
-                    {property?.details?.price && (
-                      <p className={style.propertyPrice}>💰 ${property.details.price}/month</p>
-                    )}
-                  </div>
-                  <div className={style.inquiryCount}>
-                    <span className={style.countBadge}>
-                      {inquiries.length} inquiry{inquiries.length !== 1 ? 'ies' : ''}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Property Image */}
-                {property?.media?.CoverImage?.url && (
-                  <div className={style.propertyImage}>
-                    <img 
-                      src={property.media.CoverImage.url} 
-                      alt={propertyName}
-                      onError={(e) => {
-                        e.target.src = '/default-property.jpg';
-                      }}
-                    />
-                  </div>
-                )}
-
-                {/* Inquiries for this property */}
-                <div className={style.propertyInquiries}>
-                  {inquiries.map(inquiry => {
-                    // Extract inquiry data - now it's already flattened
-                    const inquiryData = {
-                      id: inquiry.documentId || inquiry.id,
-                      documentId: inquiry.documentId || inquiry.id,
-                      
-                      // Student data
-                      student: inquiry.student || {},
-                      
-                      // Inquiry attributes - already flattened from AppContext
-                      userName: inquiry.userName || 'Unknown Student',
-                      userEmail: inquiry.userEmail || 'No email',
-                      userPhone: inquiry.userPhone || 'No phone',
-                      message: inquiry.message || 'No message',
-                      preferredDate: inquiry.preferredDate,
-                      state: inquiry.state || 'unread',
-                      landlordReply: inquiry.landlordReply,
-                      counterDate: inquiry.counterDate,
-                      createdAt: inquiry.createdAt,
-                    };
-
-                    const currentState = inquiryData.state;
+                  return Object.values(inquiriesByProperty).map(({ property, inquiries }) => {
+                    const propertyName = property?.name || 'Unnamed Property';
+                    const propertyLocation = property?.location ? 
+                      `${property.location.Address}, ${property.location.City}` : 
+                      'Location not specified';
 
                     return (
-                      <div key={inquiryData.id} className={style.inquiryItem}>
-                        {/* Inquiry Header */}
-                        <div className={style.inquiryHeader}>
-                          <div className={style.studentInfo}>
-                            <h4>👤 Inquiry from {inquiryData.userName}</h4>
-                            <div className={style.contactInfo}>
-                              <span>📧 {inquiryData.userEmail}</span>
-                              <span>📞 {inquiryData.userPhone}</span>
-                              {inquiryData.student?.firstName && (
-                                <span className={style.studentDetails}>
-                                  🎓 {inquiryData.student.firstName} {inquiryData.student.lastName}
-                                  {inquiryData.student.studentId && ` (ID: ${inquiryData.student.studentId})`}
-                                </span>
-                              )}
-                            </div>
+                      <div key={property?.id} className={style.propertyInquiriesSection}>
+                        {/* Property Header Section */}
+                        <div className={style.propertyHeader}>
+                          <div className={style.propertyInfo}>
+                            <h3>{propertyName}</h3>
+                            <p className={style.propertyAddress}>📍 {propertyLocation}</p>
+                            {property?.details?.price && (
+                              <p className={style.propertyPrice}>💰 ${property.details.price}/month</p>
+                            )}
                           </div>
-                          <div className={style.inquiryMeta}>
-                            {getInquiryStatusBadge(currentState)}
-                            <span className={style.inquiryDate}>
-                              {inquiryData.createdAt ? new Date(inquiryData.createdAt).toLocaleDateString() : 'Recently'}
+                          <div className={style.inquiryCount}>
+                            <span className={style.countBadge}>
+                              {inquiries.length} inquiry{inquiries.length !== 1 ? 'ies' : ''}
                             </span>
                           </div>
                         </div>
 
-                        {/* Inquiry Details */}
-                        <div className={style.inquiryDetails}>
-                          <div className={style.messageSection}>
-                            <h5>💬 Student's Message:</h5>
-                            <p className={style.message}>{inquiryData.message}</p>
-                          </div>
-                          
-                          {inquiryData.preferredDate && (
-                            <div className={style.preferredDate}>
-                              <h5>📅 Preferred Viewing Date:</h5>
-                              <p>{new Date(inquiryData.preferredDate).toLocaleDateString()}</p>
-                            </div>
-                          )}
-
-                          {/* Landlord Reply Section */}
-                          {inquiryData.landlordReply && (
-                            <div className={style.landlordReply}>
-                              <h5>🏠 Your Response:</h5>
-                              <div className={style.replyContent}>
-                                <p>{inquiryData.landlordReply}</p>
-                                {inquiryData.counterDate && (
-                                  <p className={style.counterDate}>
-                                    <strong>🔄 Suggested Date:</strong> {new Date(inquiryData.counterDate).toLocaleDateString()}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className={style.inquiryActions}>
-                          <div className={style.actionButtons}>
-                            {/* Mark as In Progress */}
-                            {currentState === 'unread' && (
-                              <button 
-                                onClick={() => handleUpdateInquiry(inquiryData.documentId, { state: 'in-progress' })}
-                                className={style.markReadBtn}
-                              >
-                                <FaCheckCircle />
-                                Mark as In Progress
-                              </button>
-                            )}
-                            
-                            {/* Mark as Done */}
-                            {currentState === 'in-progress' && (
-                              <button 
-                                onClick={() => handleUpdateInquiry(inquiryData.documentId, { state: 'done' })}
-                                className={style.markDoneBtn}
-                              >
-                                <FaCheckCircle />
-                                Mark as Done
-                              </button>
-                            )}
-                            
-                            {/* Reply Actions */}
-                            {!inquiryData.landlordReply ? (
-                              <button 
-                                onClick={() => {
-                                  setReplyingTo(inquiryData.documentId);
-                                  setReplyMessage('');
-                                }}
-                                className={style.replyBtn}
-                              >
-                                <FaEnvelope />
-                                Reply to Student
-                              </button>
-                            ) : (
-                              <button 
-                                onClick={() => {
-                                  setReplyingTo(inquiryData.documentId);
-                                  setReplyMessage(inquiryData.landlordReply || '');
-                                }}
-                                className={style.editReplyBtn}
-                              >
-                                <FaEdit />
-                                Edit Reply
-                              </button>
-                            )}
-                            
-                            {/* Suggest New Date */}
-                            <button 
-                              onClick={() => handleSuggestDate(inquiryData.documentId)}
-                              className={style.suggestDateBtn}
-                            >
-                              <FaClock />
-                              Suggest New Date
-                            </button>
-                            
-                            {/* Contact Student */}
-                            <a 
-                              href={`tel:${inquiryData.userPhone}`}
-                              className={style.callStudentBtn}
-                            >
-                              <FaPhone />
-                              Call Student
-                            </a>
-                          </div>
-                        </div>
-
-                        {/* Reply Form */}
-                        {replyingTo === inquiryData.documentId && (
-                          <div className={style.replyForm}>
-                            <h5>✍️ Your Reply to Student:</h5>
-                            <textarea
-                              value={replyMessage}
-                              onChange={(e) => setReplyMessage(e.target.value)}
-                              placeholder="Type your response to the student..."
-                              rows={4}
+                        {/* Property Image - FIXED: Using formatImageUrl function */}
+                        {property?.media?.CoverImage?.url && (
+                          <div className={style.propertyImage}>
+                            <img 
+                              src={formatImageUrl(property.media.CoverImage.url)} 
+                              alt={propertyName}
+                              onError={(e) => {
+                                e.target.src = '/default-property.jpg';
+                              }}
                             />
-                            <div className={style.replyActions}>
-                              <button 
-                                onClick={() => handleReply(inquiryData.documentId)}
-                                className={style.sendReplyBtn}
-                                disabled={!replyMessage.trim()}
-                              >
-                                <FaEnvelope />
-                                Send Reply
-                              </button>
-                              <button 
-                                onClick={() => {
-                                  setReplyingTo(null);
-                                  setReplyMessage('');
-                                }}
-                                className={style.cancelReplyBtn}
-                              >
-                                Cancel
-                              </button>
-                            </div>
                           </div>
                         )}
+
+                        {/* Individual Inquiries for Property */}
+                        <div className={style.propertyInquiries}>
+                          {inquiries.map(inquiry => {
+                            // Normalize inquiry data structure
+                            const inquiryData = {
+                              id: inquiry.documentId || inquiry.id,
+                              documentId: inquiry.documentId || inquiry.id,
+                              
+                              // Student data
+                              student: inquiry.student || {},
+                              
+                              // Inquiry attributes
+                              userName: inquiry.userName || 'Unknown Student',
+                              userEmail: inquiry.userEmail || 'No email',
+                              userPhone: inquiry.userPhone || 'No phone',
+                              message: inquiry.message || 'No message',
+                              preferredDate: inquiry.preferredDate,
+                              state: inquiry.state || 'unread',
+                              landlordReply: inquiry.landlordReply,
+                              counterDate: inquiry.counterDate,
+                              createdAt: inquiry.createdAt,
+                            };
+
+                            const currentState = inquiryData.state;
+
+                            return (
+                              <div key={inquiryData.id} className={style.inquiryItem}>
+                                {/* Inquiry Header with Student Info */}
+                                <div className={style.inquiryHeader}>
+                                  <div className={style.studentInfo}>
+                                    <h4>👤 Inquiry from {inquiryData.userName}</h4>
+                                    <div className={style.contactInfo}>
+                                      <span>📧 {inquiryData.userEmail}</span>
+                                      <span>📞 {inquiryData.userPhone}</span>
+                                      {inquiryData.student?.firstName && (
+                                        <span className={style.studentDetails}>
+                                          🎓 {inquiryData.student.firstName} {inquiryData.student.lastName}
+                                          {inquiryData.student.studentId && ` (ID: ${inquiryData.student.studentId})`}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className={style.inquiryMeta}>
+                                    {getInquiryStatusBadge(currentState)}
+                                    <span className={style.inquiryDate}>
+                                      {inquiryData.createdAt ? new Date(inquiryData.createdAt).toLocaleDateString() : 'Recently'}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Inquiry Details Section */}
+                                <div className={style.inquiryDetails}>
+                                  <div className={style.messageSection}>
+                                    <h5>💬 Student's Message:</h5>
+                                    <p className={style.message}>{inquiryData.message}</p>
+                                  </div>
+                                  
+                                  {inquiryData.preferredDate && (
+                                    <div className={style.preferredDate}>
+                                      <h5>📅 Preferred Viewing Date:</h5>
+                                      <p>{new Date(inquiryData.preferredDate).toLocaleDateString()}</p>
+                                    </div>
+                                  )}
+
+                                  {/* Landlord Reply Display */}
+                                  {inquiryData.landlordReply && (
+                                    <div className={style.landlordReply}>
+                                      <h5>🏠 Your Response:</h5>
+                                      <div className={style.replyContent}>
+                                        <p>{inquiryData.landlordReply}</p>
+                                        {inquiryData.counterDate && (
+                                          <p className={style.counterDate}>
+                                            <strong>🔄 Suggested Date:</strong> {new Date(inquiryData.counterDate).toLocaleDateString()}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Inquiry Action Buttons */}
+                                <div className={style.inquiryActions}>
+                                  <div className={style.actionButtons}>
+                                    {/* Mark as In Progress Button */}
+                                    {currentState === 'unread' && (
+                                      <button 
+                                        onClick={() => handleUpdateInquiry(inquiryData.documentId, { state: 'in-progress' })}
+                                        className={style.markReadBtn}
+                                      >
+                                        <FaCheckCircle />
+                                        Mark as In Progress
+                                      </button>
+                                    )}
+                                    
+                                    {/* Mark as Done Button */}
+                                    {currentState === 'in-progress' && (
+                                      <button 
+                                        onClick={() => handleUpdateInquiry(inquiryData.documentId, { state: 'done' })}
+                                        className={style.markDoneBtn}
+                                      >
+                                        <FaCheckCircle />
+                                        Mark as Done
+                                      </button>
+                                    )}
+                                    
+                                    {/* Reply Action Button */}
+                                    {!inquiryData.landlordReply ? (
+                                      <button 
+                                        onClick={() => {
+                                          setReplyingTo(inquiryData.documentId);
+                                          setReplyMessage('');
+                                          setSelectedDate('');
+                                        }}
+                                        className={style.replyBtn}
+                                      >
+                                        <FaEnvelope />
+                                        Reply to Student
+                                      </button>
+                                    ) : (
+                                      <button 
+                                        onClick={() => {
+                                          setReplyingTo(inquiryData.documentId);
+                                          setReplyMessage(inquiryData.landlordReply || '');
+                                          setSelectedDate(inquiryData.counterDate || '');
+                                        }}
+                                        className={style.editReplyBtn}
+                                      >
+                                        <FaEdit />
+                                        Edit Reply
+                                      </button>
+                                    )}
+                                    
+                                    {/* Suggest New Date Button */}
+                                    <button 
+                                      onClick={() => handleSuggestDate(inquiryData.documentId)}
+                                      className={style.suggestDateBtn}
+                                    >
+                                      <FaCalendarAlt />
+                                      Suggest New Date
+                                    </button>
+                                    
+                                    {/* Contact Student Button */}
+                                    <a 
+                                      href={`tel:${inquiryData.userPhone}`}
+                                      className={style.callStudentBtn}
+                                    >
+                                      <FaPhone />
+                                      Call Student
+                                    </a>
+                                  </div>
+                                </div>
+
+                                {/* Reply Form for Current Inquiry */}
+                                {replyingTo === inquiryData.documentId && (
+                                  <div className={style.replyForm}>
+                                    <h5>✍️ Your Reply to Student:</h5>
+                                    <div className={style.dateSuggestionSection}>
+                                      <label>
+                                        <FaCalendarAlt /> Suggested Date (Optional):
+                                      </label>
+                                      <input
+                                        type="date"
+                                        value={selectedDate}
+                                        onChange={(e) => setSelectedDate(e.target.value)}
+                                        min={new Date().toISOString().split('T')[0]}
+                                        className={style.inlineDateInput}
+                                      />
+                                      {selectedDate && (
+                                        <span className={style.selectedDatePreview}>
+                                          📅 {new Date(selectedDate).toLocaleDateString('en-US', {
+                                            weekday: 'long',
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                          })}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <textarea
+                                      value={replyMessage}
+                                      onChange={(e) => setReplyMessage(e.target.value)}
+                                      placeholder="Type your response to the student..."
+                                      rows={4}
+                                    />
+                                    <div className={style.replyActions}>
+                                      <button 
+                                        onClick={() => handleReply(inquiryData.documentId)}
+                                        className={style.sendReplyBtn}
+                                        disabled={!replyMessage.trim()}
+                                      >
+                                        <FaEnvelope />
+                                        Send Reply
+                                      </button>
+                                      <button 
+                                        onClick={() => {
+                                          setReplyingTo(null);
+                                          setReplyMessage('');
+                                          setSelectedDate('');
+                                        }}
+                                        className={style.cancelReplyBtn}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     );
-                  })}
+                  });
+                })()
+              ) : (
+                /* Empty State for Inquiries */
+                <div className={style.emptyState}>
+                  <FaEnvelope className={style.emptyIcon} />
+                  <h3>No property inquiries yet</h3>
+                  <p>When students inquire about your properties, they'll appear here organized by property.</p>
+                  <div className={style.emptyTips}>
+                    <h4>💡 Tips to get more inquiries:</h4>
+                    <ul>
+                      <li>Add high-quality photos of your property</li>
+                      <li>Set competitive pricing</li>
+                      <li>Write detailed property descriptions</li>
+                      <li>Respond quickly to inquiries when they come in</li>
+                    </ul>
+                  </div>
                 </div>
-              </div>
-            );
-          });
-        })()
-      ) : (
-        /* Empty State */
-        <div className={style.emptyState}>
-          <FaEnvelope className={style.emptyIcon} />
-          <h3>No property inquiries yet</h3>
-          <p>When students inquire about your properties, they'll appear here organized by property.</p>
-          <div className={style.emptyTips}>
-            <h4>💡 Tips to get more inquiries:</h4>
-            <ul>
-              <li>Add high-quality photos of your property</li>
-              <li>Set competitive pricing</li>
-              <li>Write detailed property descriptions</li>
-              <li>Respond quickly to inquiries when they come in</li>
-            </ul>
+              )}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-  </div>
-)}
+        )}
       </div>
     </div>
   );

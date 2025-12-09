@@ -1,12 +1,44 @@
 import { GET_LANDLORD_BY_USER_ID } from '../graphql/createProfile';
 import { gql } from '@apollo/client';
 
-// Configuration
+// Configuration with video limits
 const config = {
   strapiUrl: process.env.REACT_APP_STRAPI_URL || 'http://localhost:1337',
   upload: {
-    maxFileSize: 10 * 1024 * 1024, // 10MB
-    allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+    // Image limits
+    maxImageSize: 10 * 1024 * 1024, // 10MB for images
+    // Video limits - for 10-15 minute videos
+    maxVideoSize: 100 * 1024 * 1024, // 100MB for videos (recommended for 720p 10-15min videos)
+    maxVideoDuration: 900, // 15 minutes in seconds (15 * 60)
+    // Combined allowed types
+    allowedTypes: [
+      'image/jpeg', 
+      'image/png', 
+      'image/webp',
+      'video/mp4',
+      'video/webm',
+      'video/ogg'
+    ],
+    allowedImageTypes: [
+      'image/jpeg',
+      'image/png',
+      'image/webp'
+    ],
+    allowedVideoTypes: [
+      'video/mp4',
+      'video/webm',
+      'video/ogg'
+    ],
+    // Recommended video settings for guidance
+    recommendedVideoSettings: {
+      format: 'MP4 (H.264)',
+      resolution: '720p (1280×720)',
+      bitrate: '1.5-2 Mbps',
+      framerate: '24-30 fps',
+      audio: 'AAC, 128 kbps',
+      maxDuration: '15 minutes',
+      maxSize: '100MB'
+    }
   },
   cache: {
     ttl: 5 * 60 * 1000 // 5 minutes
@@ -53,7 +85,7 @@ const getAuthToken = () => {
   return localStorage.getItem('authToken') || localStorage.getItem('jwt') || '';
 };
 
-// GraphQL Queries and Mutations
+// GraphQL Queries and Mutations (unchanged)
 export const CreateAccommodation = gql`
   mutation CreateAccommodation($data: AccommodationInput!) {
     createAccommodation(data: $data) {
@@ -180,7 +212,6 @@ export const UpdateAccommodation = gql`
   }
 `;
 
-// accommodationService.js - ENSURE PROPER QUERY FILTERING
 export const GetLandlordAccommodations = gql`
   query GetUserAccommodations($landlordId: ID!) {
     accommodations(
@@ -362,8 +393,9 @@ export const DeleteAccommodation = gql`
   }
 `;
 
-// File validation
+// Enhanced file validation with video support
 const validateFile = (file) => {
+  // Check if file type is allowed
   if (!config.upload.allowedTypes.includes(file.type)) {
     throw new AccommodationError(
       `Invalid file type: ${file.type}. Allowed: ${config.upload.allowedTypes.join(', ')}`,
@@ -371,14 +403,97 @@ const validateFile = (file) => {
     );
   }
 
-  if (file.size > config.upload.maxFileSize) {
-    throw new AccommodationError(
-      `File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum: ${config.upload.maxFileSize / 1024 / 1024}MB`,
-      'FILE_VALIDATION'
-    );
+  // Check if it's a video
+  const isVideo = config.upload.allowedVideoTypes.includes(file.type);
+  const isImage = config.upload.allowedImageTypes.includes(file.type);
+
+  if (isVideo) {
+    // Video validation
+    if (file.size > config.upload.maxVideoSize) {
+      const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
+      const maxSizeMB = (config.upload.maxVideoSize / 1024 / 1024).toFixed(0);
+      throw new AccommodationError(
+        `Video file too large: ${fileSizeMB}MB. Maximum: ${maxSizeMB}MB for videos. ` +
+        `For 10-15 minute videos, use 720p resolution at 1.5-2 Mbps bitrate.`,
+        'VIDEO_SIZE_LIMIT'
+      );
+    }
+    
+    // Log video upload info for guidance
+    console.log('🎬 Video upload detected:', {
+      name: file.name,
+      size: (file.size / 1024 / 1024).toFixed(2) + 'MB',
+      type: file.type,
+      recommendedSettings: config.upload.recommendedVideoSettings
+    });
+    
+  } else if (isImage) {
+    // Image validation (original limits)
+    if (file.size > config.upload.maxImageSize) {
+      throw new AccommodationError(
+        `Image too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum: ${config.upload.maxImageSize / 1024 / 1024}MB`,
+        'IMAGE_SIZE_LIMIT'
+      );
+    }
   }
 
   return true;
+};
+
+// Get video duration (async function for potential future use)
+const getVideoDuration = (file) => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    
+    video.onloadedmetadata = () => {
+      window.URL.revokeObjectURL(video.src);
+      resolve(video.duration);
+    };
+    
+    video.onerror = () => {
+      window.URL.revokeObjectURL(video.src);
+      reject(new Error('Could not load video metadata'));
+    };
+    
+    video.src = URL.createObjectURL(file);
+  });
+};
+
+// Validate video duration (optional - can be called separately)
+const validateVideoDuration = async (file) => {
+  try {
+    const duration = await getVideoDuration(file);
+    
+    if (duration > config.upload.maxVideoDuration) {
+      const durationMinutes = Math.ceil(duration / 60);
+      const maxMinutes = config.upload.maxVideoDuration / 60;
+      throw new AccommodationError(
+        `Video too long: ${durationMinutes} minutes. Maximum: ${maxMinutes} minutes.`,
+        'VIDEO_DURATION_LIMIT'
+      );
+    }
+    
+    return duration;
+  } catch (error) {
+    // If we can't read duration, just warn but don't block
+    console.warn('⚠️ Could not validate video duration:', error.message);
+    return null;
+  }
+};
+
+// Get video upload guidelines for UI display
+export const getVideoUploadGuidelines = () => {
+  return {
+    limits: {
+      maxSize: config.upload.maxVideoSize,
+      maxSizeMB: (config.upload.maxVideoSize / 1024 / 1024).toFixed(0),
+      maxDuration: config.upload.maxVideoDuration,
+      maxDurationMinutes: config.upload.maxVideoDuration / 60
+    },
+    recommended: config.upload.recommendedVideoSettings,
+    allowedTypes: config.upload.allowedVideoTypes
+  };
 };
 
 // Helper function to handle GraphQL API calls with retry logic
@@ -443,9 +558,19 @@ const graphqlRequest = async (query, variables = {}, retries = config.retry.maxR
   }
 };
 
-// Upload file to Strapi
+// Upload file to Strapi with enhanced video handling
 const uploadFile = async (file) => {
   validateFile(file);
+  
+  // For videos, optionally validate duration
+  if (config.upload.allowedVideoTypes.includes(file.type)) {
+    try {
+      await validateVideoDuration(file);
+    } catch (error) {
+      // Log but don't block if duration validation fails
+      console.warn('Video duration validation warning:', error.message);
+    }
+  }
   
   const formData = new FormData();
   formData.append('files', file);
@@ -481,7 +606,7 @@ const uploadFile = async (file) => {
   }
 };
 
-// Upload multiple files - FIXED: Proper file filtering
+// Upload multiple files - with video support
 const uploadFiles = async (files) => {
   // Filter only File instances and validate them
   const filesToUpload = files.filter(file => file instanceof File);
@@ -491,6 +616,7 @@ const uploadFiles = async (files) => {
     return [];
   }
   
+  // Validate each file
   filesToUpload.forEach(file => validateFile(file));
   
   const formData = new FormData();
@@ -524,7 +650,7 @@ const uploadFiles = async (files) => {
   }
 };
 
-// accommodationService.js - COMPLETE FIXED transformStrapiResponse
+// transformStrapiResponse (unchanged from your original)
 const transformStrapiResponse = (strapiData) => {
   try {
     if (!strapiData) {
@@ -781,7 +907,6 @@ const getAllAccommodations = async (useCache = true) => {
 };
 
 // Get landlord ID with proper user object handling
-// In your getLandlordId function, make sure it also uses ID type
 export const getLandlordId = async (user) => {
   console.log("🔍 Getting landlord ID for user:", user);
 
@@ -886,191 +1011,214 @@ const batchDeleteAccommodations = async (documentIds, user) => {
 // Main service functions
 export const accommodationService = {
   // Create accommodation with landlord relationship
-  // Add this temporary debug to see the exact query being sent
-// 🔥 FIXED: Update the getStudentIdByUser function with correct ID type
-async getStudentIdByUser(userDocumentId) {
-  try {
-    const GET_STUDENT_BY_USER = gql`
-      query GetStudentByUser($userDocumentId: ID!) {
-        students(filters: { users_permissions_user: { documentId: { eq: $userDocumentId } } }) {
-          documentId
-          studentId
-          firstName
-          lastName
-          phoneNumber
-          profile {
-            url
-            alternativeText
-          }
-          users_permissions_user {
+  async getStudentIdByUser(userDocumentId) {
+    try {
+      const GET_STUDENT_BY_USER = gql`
+        query GetStudentByUser($userDocumentId: ID!) {
+          students(filters: { users_permissions_user: { documentId: { eq: $userDocumentId } } }) {
             documentId
-            username
-            email
+            studentId
+            firstName
+            lastName
+            phoneNumber
+            profile {
+              url
+              alternativeText
+            }
+            users_permissions_user {
+              documentId
+              username
+              email
+            }
           }
         }
-      }
-    `;
+      `;
 
-    const result = await accommodationService.graphqlRequest(GET_STUDENT_BY_USER, {
-      userDocumentId: userDocumentId  // This will work because documentId is already an ID
-    });
+      const result = await accommodationService.graphqlRequest(GET_STUDENT_BY_USER, {
+        userDocumentId: userDocumentId  // This will work because documentId is already an ID
+      });
 
-    const student = result.students?.[0];
-    
-    if (student) {
-      const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim();
+      const student = result.students?.[0];
       
-      return {
-        ...student,
-        fullName: fullName || 'Student'
-      };
+      if (student) {
+        const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim();
+        
+        return {
+          ...student,
+          fullName: fullName || 'Student'
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error getting student by user:', error);
+      return null;
     }
-    
-    return null;
-  } catch (error) {
-    console.error('Error getting student by user:', error);
-    return null;
-  }
-},
+  },
 
   async createAccommodation(accommodationData, user) {
-  let coverImageId = null;
-  let galleryIds = [];
-  let roomIds = [];
+    let coverImageId = null;
+    let galleryIds = [];
+    let roomIds = [];
+    let showcaseId = null; // For video showcase
 
-  try {
-    console.log('=== ACCOMMODATION CREATION START ===');
-    console.log('Raw accommodation data:', accommodationData);
+    try {
+      console.log('=== ACCOMMODATION CREATION START ===');
+      console.log('Raw accommodation data:', accommodationData);
 
-    // Get landlord ID for current user
-    const landlordId = await getLandlordId(user);
-    if (!landlordId) {
-      return { 
-        success: false, 
-        error: 'User is not registered as a landlord',
-        type: 'AUTHENTICATION'
-      };
-    }
-
-    // Upload cover image and get ID
-    if (accommodationData.media?.CoverImage && accommodationData.media.CoverImage instanceof File) {
-      console.log('Uploading cover image...');
-      const uploadedCoverImage = await uploadFile(accommodationData.media.CoverImage);
-      coverImageId = uploadedCoverImage.id;
-      console.log('Cover image uploaded, ID:', coverImageId);
-    }
-
-    // Upload gallery images
-    if (accommodationData.media?.Gallery && accommodationData.media.Gallery.length > 0) {
-      const galleryFiles = accommodationData.media.Gallery.filter(file => file instanceof File);
-      if (galleryFiles.length > 0) {
-        console.log('Uploading gallery images...');
-        const uploadedGallery = await uploadFiles(galleryFiles);
-        galleryIds = uploadedGallery.map(file => file.id);
-        console.log('Gallery images uploaded, IDs:', galleryIds);
+      // Get landlord ID for current user
+      const landlordId = await getLandlordId(user);
+      if (!landlordId) {
+        return { 
+          success: false, 
+          error: 'User is not registered as a landlord',
+          type: 'AUTHENTICATION'
+        };
       }
-    }
 
-    // Upload room images
-    if (accommodationData.media?.Rooms && accommodationData.media.Rooms.length > 0) {
-      const roomFiles = accommodationData.media.Rooms.filter(file => file instanceof File);
-      if (roomFiles.length > 0) {
-        console.log('Uploading room images...');
-        const uploadedRooms = await uploadFiles(roomFiles);
-        roomIds = uploadedRooms.map(file => file.id);
-        console.log('Room images uploaded, IDs:', roomIds);
+      // Upload cover image and get ID
+      if (accommodationData.media?.CoverImage && accommodationData.media.CoverImage instanceof File) {
+        console.log('Uploading cover image...');
+        const uploadedCoverImage = await uploadFile(accommodationData.media.CoverImage);
+        coverImageId = uploadedCoverImage.id;
+        console.log('Cover image uploaded, ID:', coverImageId);
       }
-    }
 
-    // Build media object with direct ID assignments
-    const mediaData = {};
-
-    if (coverImageId) {
-      mediaData.CoverImage = coverImageId;
-    }
-
-    if (galleryIds.length > 0) {
-      mediaData.Gallery = galleryIds;
-    }
-
-    if (roomIds.length > 0) {
-      mediaData.Rooms = roomIds;
-    }
-
-    // Prepare the main data
-    const data = {
-      name: accommodationData.name || 'Property Name',
-      location: {
-        Address: accommodationData.location?.Address || '123 Main St',
-        City: accommodationData.location?.City || 'Chinhoyi',
-        latitude: parseFloat(accommodationData.location?.latitude) || 17,
-        longitude: parseFloat(accommodationData.location?.longitude) || 30
-      },
-      details: {
-        Bathrooms: parseInt(accommodationData.details?.Bathrooms) || 2,
-        Bedrooms: parseInt(accommodationData.details?.Bedrooms) || 2,
-        price: parseFloat(accommodationData.details?.price) || 120,
-        Category: accommodationData.details?.Category || 'Boarding',
-        Type: accommodationData.details?.Type || 'Mixed',
-        distance: accommodationData.details?.distance !== undefined ? parseInt(accommodationData.details.distance) : null,
-        isFull: accommodationData.details?.isFull !== undefined ? accommodationData.details.isFull : null,
-        Facilities: {
-          kitchen: accommodationData.details?.Facilities?.kitchen || true,
-          SwimmingPool: accommodationData.details?.Facilities?.SwimmingPool || true,
-          gas: accommodationData.details?.Facilities?.gas || true,
-          security: accommodationData.details?.Facilities?.security || true,
-          solar: accommodationData.details?.Facilities?.solar || true,
-          wifi: accommodationData.details?.Facilities?.wifi || true
+      // Upload gallery images
+      if (accommodationData.media?.Gallery && accommodationData.media.Gallery.length > 0) {
+        const galleryFiles = accommodationData.media.Gallery.filter(file => file instanceof File);
+        if (galleryFiles.length > 0) {
+          console.log('Uploading gallery images...');
+          const uploadedGallery = await uploadFiles(galleryFiles);
+          galleryIds = uploadedGallery.map(file => file.id);
+          console.log('Gallery images uploaded, IDs:', galleryIds);
         }
-      },
-      landlord: landlordId
-    };
+      }
 
-    // Only add media if we have media data
-    if (Object.keys(mediaData).length > 0) {
-      data.media = mediaData;
-    }
+      // Upload room images
+      if (accommodationData.media?.Rooms && accommodationData.media.Rooms.length > 0) {
+        const roomFiles = accommodationData.media.Rooms.filter(file => file instanceof File);
+        if (roomFiles.length > 0) {
+          console.log('Uploading room images...');
+          const uploadedRooms = await uploadFiles(roomFiles);
+          roomIds = uploadedRooms.map(file => file.id);
+          console.log('Room images uploaded, IDs:', roomIds);
+        }
+      }
 
-    console.log('Final GraphQL mutation data:', JSON.stringify(data, null, 2));
+      // Upload showcase video (if provided)
+      if (accommodationData.media?.ShowCase && accommodationData.media.ShowCase instanceof File) {
+        console.log('🎬 Uploading showcase video...');
+        console.log('Video info:', {
+          name: accommodationData.media.ShowCase.name,
+          size: (accommodationData.media.ShowCase.size / 1024 / 1024).toFixed(2) + 'MB',
+          type: accommodationData.media.ShowCase.type
+        });
+        
+        try {
+          const uploadedShowcase = await uploadFile(accommodationData.media.ShowCase);
+          showcaseId = uploadedShowcase.id;
+          console.log('✅ Showcase video uploaded, ID:', showcaseId);
+        } catch (videoError) {
+          console.error('❌ Video upload failed:', videoError);
+          // Don't fail the entire accommodation creation if video fails
+          // Just log the error and continue
+        }
+      }
 
-    const result = await graphqlRequest(CreateAccommodation, { data });
-    console.log('✅ Accommodation created successfully:', result);
-    
-    if (!result || !result.createAccommodation) {
+      // Build media object with direct ID assignments
+      const mediaData = {};
+
+      if (coverImageId) {
+        mediaData.CoverImage = coverImageId;
+      }
+
+      if (galleryIds.length > 0) {
+        mediaData.Gallery = galleryIds;
+      }
+
+      if (roomIds.length > 0) {
+        mediaData.Rooms = roomIds;
+      }
+
+      if (showcaseId) {
+        mediaData.ShowCase = showcaseId;
+      }
+
+      // Prepare the main data
+      const data = {
+        name: accommodationData.name || 'Property Name',
+        location: {
+          Address: accommodationData.location?.Address || '123 Main St',
+          City: accommodationData.location?.City || 'Chinhoyi',
+          latitude: parseFloat(accommodationData.location?.latitude) || 17,
+          longitude: parseFloat(accommodationData.location?.longitude) || 30
+        },
+        details: {
+          Bathrooms: parseInt(accommodationData.details?.Bathrooms) || 2,
+          Bedrooms: parseInt(accommodationData.details?.Bedrooms) || 2,
+          price: parseFloat(accommodationData.details?.price) || 120,
+          Category: accommodationData.details?.Category || 'Boarding',
+          Type: accommodationData.details?.Type || 'Mixed',
+          distance: accommodationData.details?.distance !== undefined ? parseInt(accommodationData.details.distance) : null,
+          isFull: accommodationData.details?.isFull !== undefined ? accommodationData.details.isFull : null,
+          Facilities: {
+            kitchen: accommodationData.details?.Facilities?.kitchen || true,
+            SwimmingPool: accommodationData.details?.Facilities?.SwimmingPool || true,
+            gas: accommodationData.details?.Facilities?.gas || true,
+            security: accommodationData.details?.Facilities?.security || true,
+            solar: accommodationData.details?.Facilities?.solar || true,
+            wifi: accommodationData.details?.Facilities?.wifi || true
+          }
+        },
+        landlord: landlordId
+      };
+
+      // Only add media if we have media data
+      if (Object.keys(mediaData).length > 0) {
+        data.media = mediaData;
+      }
+
+      console.log('Final GraphQL mutation data:', JSON.stringify(data, null, 2));
+
+      const result = await graphqlRequest(CreateAccommodation, { data });
+      console.log('✅ Accommodation created successfully:', result);
+      
+      if (!result || !result.createAccommodation) {
+        return {
+          success: false,
+          error: 'Invalid response from server - accommodation not created',
+          type: 'SERVER_ERROR'
+        };
+      }
+      
+      // Clear cache after creation
+      clearCache();
+      
+      const transformedAccommodation = transformStrapiResponse(result.createAccommodation);
+      
+      return {
+        success: true,
+        data: transformedAccommodation,
+        message: 'Property created successfully!'
+      };
+
+    } catch (error) {
+      console.error('=== ACCOMMODATION CREATION FAILED ===');
+      console.error('Error details:', error);
+      
       return {
         success: false,
-        error: 'Invalid response from server - accommodation not created',
-        type: 'SERVER_ERROR'
+        error: error.message || 'Failed to create property',
+        type: error.type || 'UNKNOWN_ERROR'
       };
     }
-    
-    // Clear cache after creation
-    clearCache();
-    
-    const transformedAccommodation = transformStrapiResponse(result.createAccommodation);
-    
-    return {
-      success: true,
-      data: transformedAccommodation,
-      message: 'Property created successfully!'
-    };
-
-  } catch (error) {
-    console.error('=== ACCOMMODATION CREATION FAILED ===');
-    console.error('Error details:', error);
-    
-    return {
-      success: false,
-      error: error.message || 'Failed to create property',
-      type: error.type || 'UNKNOWN_ERROR'
-    };
-  }
-},
+  },
 
   // Get user accommodations
   getUserAccommodations,
 
-  // Update accommodation function - FIXED: Proper file detection
+  // Update accommodation function - with video support
   async updateAccommodation(documentId, accommodationData, user) {
     try {
       console.log('Starting accommodation update for documentId:', documentId);
@@ -1091,7 +1239,7 @@ async getStudentIdByUser(userDocumentId) {
         mediaUpdates.CoverImage = uploadedCoverImage.id;
       }
 
-      // Upload new gallery images - FIXED: Check ALL items properly
+      // Upload new gallery images
       if (accommodationData.media?.Gallery && accommodationData.media.Gallery.length > 0) {
         const galleryFiles = accommodationData.media.Gallery.filter(item => item instanceof File);
         if (galleryFiles.length > 0) {
@@ -1101,7 +1249,7 @@ async getStudentIdByUser(userDocumentId) {
         }
       }
 
-      // Upload new room images - FIXED: Check ALL items properly
+      // Upload new room images
       if (accommodationData.media?.Rooms && accommodationData.media.Rooms.length > 0) {
         const roomFiles = accommodationData.media.Rooms.filter(item => item instanceof File);
         if (roomFiles.length > 0) {
@@ -1109,6 +1257,20 @@ async getStudentIdByUser(userDocumentId) {
           const uploadedRooms = await uploadFiles(roomFiles);
           mediaUpdates.Rooms = uploadedRooms.map(file => file.id);
         }
+      }
+
+      // Upload new showcase video
+      if (accommodationData.media?.ShowCase && accommodationData.media.ShowCase instanceof File) {
+        console.log('🎬 Uploading new showcase video...');
+        console.log('Video info:', {
+          name: accommodationData.media.ShowCase.name,
+          size: (accommodationData.media.ShowCase.size / 1024 / 1024).toFixed(2) + 'MB',
+          type: accommodationData.media.ShowCase.type
+        });
+        
+        const uploadedShowcase = await uploadFile(accommodationData.media.ShowCase);
+        mediaUpdates.ShowCase = uploadedShowcase.id;
+        console.log('✅ Showcase video uploaded, ID:', uploadedShowcase.id);
       }
 
       // Prepare the input data with null safety
@@ -1196,10 +1358,16 @@ async getStudentIdByUser(userDocumentId) {
   getAllAccommodations,
   getLandlordId,
 
-  // Upload file (exposed for external use)
+  // Upload functions
   uploadFile,
   uploadFiles,
   graphqlRequest,
+  
+  // Validation functions
+  validateFile,
+  validateVideoDuration,
+  getVideoDuration,
+  getVideoUploadGuidelines,
   
   // Cache management
   clearCache,

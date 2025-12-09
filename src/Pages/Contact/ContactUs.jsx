@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import style from '../../Styles/pages/ContactPage.module.css';
 import { useQuery } from '@apollo/client/react';
 import { Get_Contact_Page_Data_Query } from './Contact';
-import Hero from '../../Components/Common/Hero';
+import { useApp } from '../../Contexts/AppContext';
 
-// Icon components for contact information
+// Icon components
 const ContactIcon = ({ type }) => {
   switch (type) {
     case 'company':
@@ -37,110 +37,325 @@ const ContactIcon = ({ type }) => {
 };
 
 export default function ContactUs() {
-  const { data, error, loading } = useQuery(Get_Contact_Page_Data_Query, {
-    pollInterval: 5000,
-    fetchPolicy: 'cache-and-network',
-    notifyOnNetworkStatusChange: false,
+  const { user, userProfile } = useApp();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
+
+  const { data, error, loading } = useQuery(Get_Contact_Page_Data_Query, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  // Pre-fill form with user data when logged in
+  useEffect(() => {
+    if (user) {
+      const email = user.email || '';
+      const name = userProfile?.fullName || user.username || '';
+      
+      setFormData(prev => ({
+        ...prev,
+        name: name,
+        email: email
+      }));
+    }
+  }, [user, userProfile]);
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+    
+    if (submitStatus.type === 'error') {
+      setSubmitStatus({ type: '', message: '' });
+    }
+  };
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      setSubmitStatus({ type: 'error', message: 'Name is required' });
+      return false;
+    }
+    
+    if (!formData.email.trim()) {
+      setSubmitStatus({ type: 'error', message: 'Email is required' });
+      return false;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setSubmitStatus({ type: 'error', message: 'Please enter a valid email address' });
+      return false;
+    }
+    
+    if (!formData.message.trim()) {
+      setSubmitStatus({ type: 'error', message: 'Message is required' });
+      return false;
+    }
+    
+    return true;
+  };
+
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  
+  if (!validateForm()) return;
+  
+  setIsSubmitting(true);
+  setSubmitStatus({ type: '', message: '' });
+
+  try {
+    // IMPORTANT: Make sure you're using the EXACT same URL
+    const url = 'http://localhost:1337/api/contact-submissions';
+    
+    console.log('🚀 Sending POST to:', url);
+    
+    // EXACT same payload as curl
+    const payload = {
+      data: {
+        name: formData.name,
+        email: formData.email,
+        message: formData.message
+      }
+    };
+    
+    console.log('📤 Payload:', JSON.stringify(payload, null, 2));
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // No Authorization header for public access (like curl)
+      },
+      body: JSON.stringify(payload),
+    });
+
+    console.log('📨 Response status:', response.status);
+    console.log('📨 Response headers:', Object.fromEntries(response.headers.entries()));
+    
+    const responseText = await response.text();
+    console.log('📨 Raw response:', responseText);
+    
+    if (!response.ok) {
+      console.error('❌ Server error details:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+        body: responseText
+      });
+      throw new Error(`Server error ${response.status}: ${response.statusText}`);
+    }
+    
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('❌ Failed to parse JSON:', parseError);
+      throw new Error('Server returned invalid response');
+    }
+    
+    console.log('✅ Success! Response:', result);
+    
+    setSubmitStatus({ 
+      type: 'success', 
+      message: result.message || 'Thank you! Your message has been sent successfully.' 
+    });
+    
+    // Reset form
+    setFormData({
+      name: user ? (userProfile?.fullName || user.username || '') : '',
+      email: user ? (user.email || '') : '',
+      message: ''
+    });
+    
+  } catch (error) {
+    console.error('❌ Submission error:', error);
+    
+    let errorMessage = 'Failed to submit contact form. ';
+    
+    if (error.message.includes('405')) {
+      errorMessage += 'Server rejected POST request. This might be a CORS issue.';
+    } else if (error.message.includes('NetworkError')) {
+      errorMessage += 'Network error. Please check your connection.';
+    } else {
+      errorMessage += error.message;
+    }
+    
+    setSubmitStatus({ 
+      type: 'error', 
+      message: errorMessage 
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   if (loading && !data) return <div className={style.loading}>Loading Contact Information...</div>;
   if (error) return <div className={style.error}>Error: {error.message}</div>;
 
   const contactInfo = data?.contactUs?.contactUs;
-  const contactHero = data?.contactUs?.HeroSection;
-  const getImageUrl = 'http://localhost:1337';
+  const contactEmail = contactInfo?.email || 'VarsityCribs@gmail.com';
 
   return (
     <div className={style.mainBody}>
-      
-    
       <div className={style.ContactUsBody}>
-        {/* Contact Information Card */}
+        {/* Left Side - Contact Information */}
         <section className={style.ContactInfo}>
           <div className={style.infoHeader}>
             <h2>Get In Touch</h2>
             <p>We'd love to hear from you</p>
           </div>
           
-          {contactInfo ? (
-            <>
-              <div className={style.contactItem}>
-                <ContactIcon type="company" />
-                <div className={style.contactContent}>
-                  <label>Company Name</label>
-                  <p>{contactInfo.name || 'Not specified'}</p>
-                </div>
+          <div className={style.contactItem}>
+            <ContactIcon type="company" />
+            <div className={style.contactContent}>
+              <label>Company Name</label>
+              <p>{contactInfo?.name || 'Varsity Cribs'}</p>
+            </div>
+          </div>
+          
+          <div className={style.contactItem}>
+            <ContactIcon type="email" />
+            <div className={style.contactContent}>
+              <label>Email Address</label>
+              <a href={`mailto:${contactEmail}`} className={style.contactLink}>
+                {contactEmail}
+              </a>
+            </div>
+          </div>
+          
+          {contactInfo?.phone && (
+            <div className={style.contactItem}>
+              <ContactIcon type="phone" />
+              <div className={style.contactContent}>
+                <label>Phone Number</label>
+                <a href={`tel:+263${contactInfo.phone}`} className={style.contactLink}>
+                  +263 {contactInfo.phone}
+                </a>
               </div>
-              
-              <div className={style.contactItem}>
-                <ContactIcon type="email" />
-                <div className={style.contactContent}>
-                  <label>Email Address</label>
-                  <p>{contactInfo.email || 'Not specified'}</p>
-                </div>
-              </div>
-              
-              <div className={style.contactItem}>
-                <ContactIcon type="phone" />
-                <div className={style.contactContent}>
-                  <label>Phone Number</label>
-                  <p>+263 {contactInfo.phone || 'Not specified'}</p>
-                </div>
-              </div>
-              
-              <div className={style.contactItem}>
-                <ContactIcon type="address" />
-                <div className={style.contactContent}>
-                  <label>Office Address</label>
-                  <p>{contactInfo.address || 'Not specified'}</p>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className={style.loading}>Loading contact information...</div>
+            </div>
           )}
+          
+          {contactInfo?.address && (
+            <div className={style.contactItem}>
+              <ContactIcon type="address" />
+              <div className={style.contactContent}>
+                <label>Office Address</label>
+                <p>{contactInfo.address}</p>
+              </div>
+            </div>
+          )}
+          
+          {/* User info if logged in */}
+          {user && (
+            <div className={style.userInfo}>
+              <div className={style.userInfoHeader}>
+                <ContactIcon type="email" />
+                <h4>Your Account</h4>
+              </div>
+              <p>Logged in as: <strong>{user.username}</strong></p>
+              <p>Email: <strong>{user.email}</strong></p>
+              <p className={style.userNote}>
+                Your message will be linked to your account
+              </p>
+            </div>
+          )}
+        
         </section>
 
-        {/* Contact Form */}
+        {/* Right Side - Contact Form */}
         <section className={style.ContactForm}>
-          <section className={style.ContactFormFields}>
+          <form onSubmit={handleSubmit} className={style.ContactFormFields}>
             <div className={style.formHeader}>
               <h2>Send us a Message</h2>
-              <p>Fill out the form below and we'll get back to you soon</p>
+              <p>Fill out the form below</p>
             </div>
             
-            <div className={style.Container1}>
-              <label htmlFor="name">Your Name</label>
+            {/* Status Messages */}
+            {submitStatus.message && (
+              <div className={`${style.statusMessage} ${style[submitStatus.type]}`}>
+                {submitStatus.message}
+              </div>
+            )}
+            
+            <div className={style.formGroup}>
+              <label htmlFor="name">Your Name *</label>
               <input 
                 type="text" 
                 placeholder="Enter your full name" 
                 id="name" 
+                value={formData.name}
+                onChange={handleChange}
+                disabled={isSubmitting}
+                required
               />
+              {user && (
+                <small className={style.fieldNote}>
+                  Using your account name
+                </small>
+              )}
             </div>
             
-            <div className={style.Container1}>
-              <label htmlFor="email">Email Address</label>
+            <div className={style.formGroup}>
+              <label htmlFor="email">Email Address *</label>
               <input 
                 type="email" 
                 placeholder="Enter your email address" 
                 id="email" 
+                value={formData.email}
+                onChange={handleChange}
+                disabled={isSubmitting || (user && user.email)}
+                required
               />
+              {user && user.email ? (
+                <small className={style.fieldNote}>
+                  Using your account email
+                </small>
+              ) : (
+                <small className={style.fieldNote}>
+                  Enter your email address
+                </small>
+              )}
             </div>
             
-            <div className={style.Container1}>
-              <label htmlFor="message">Your Message</label>
+            <div className={style.formGroup}>
+              <label htmlFor="message">Your Message *</label>
               <textarea 
-                name="message" 
                 id="message" 
                 placeholder="Tell us how we can help you..."
                 rows="6"
+                value={formData.message}
+                onChange={handleChange}
+                disabled={isSubmitting}
+                required
               />
             </div>
             
-            <button className={style.Submit}>
-              Send Message
+            <button 
+              type="submit" 
+              className={style.Submit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className={style.buttonSpinner}></span>
+                  Sending...
+                </>
+              ) : (
+                'Send Message'
+              )}
             </button>
-          </section>
+            
+            <p className={style.formNote}>
+              * Required fields
+            </p>
+          </form>
         </section>
       </div>
     </div>

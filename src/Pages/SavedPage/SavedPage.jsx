@@ -165,7 +165,7 @@ export default function SavedPage() {
                       <FaTrash />
                     </button>
                     <Link 
-                      to={`/property/${property.id}`}
+                      to={`/Single/${property.id}`}
                       className={style.actionBtn}
                       aria-label="View property details"
                     >
@@ -209,7 +209,7 @@ export default function SavedPage() {
 
                   <div className={style.itemActionsFooter}>
                     <Link 
-                      to={`/property/${property.id}`}
+                      to={`/Single/${property.id}`}
                       className={style.viewDetailsBtn}
                     >
                       View Details

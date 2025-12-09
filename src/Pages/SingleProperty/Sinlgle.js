@@ -41,8 +41,11 @@ export const GET_PROPERTY_DETAILS = gql`
           url
           alternativeText
         }
+        ShowCase {
+          alternativeText
+          url
+        }
       }
-      # 🔥 CRITICAL: Added proper landlord fields
       landlord {
         documentId
         fullName

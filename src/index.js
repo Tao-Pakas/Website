@@ -14,10 +14,10 @@ import SingleProperty from './Pages/SingleProperty/SingleProperty';
 import Notfound from './Pages/Notfound';
 import Navbar from './Components/Common/Navbar';
 import Footer from './Components/Common/Footer';
-import Hero from './Components/Common/Hero';
 import Login from './Components/Forms/Login';
 import DashBoard from './Pages/DashBoard/DashBoard';
 import Favorites from './Pages/Favorites/Favorites';
+import EmailVerification from './Components/Auth/EmailVerification';
 
 // Context Providers
 import { AppProvider } from './Contexts/AppContext';
@@ -25,7 +25,6 @@ import { AuthProvider } from './Contexts/AuthContext'; // Add this import
 import Settings from './Pages/Settings/Settings';
 import SavedPage from './Pages/SavedPage/SavedPage';
 import LandlordDashboard from './Pages/DashBoard/LandLordDashBoard';
-import App from './App';
 
 // Apollo Client setup initialize ApolloClient
 const client = new ApolloClient({
@@ -63,6 +62,8 @@ root.render(
               <Route path="/DashBoard/:id?" element={<DashBoard/>}/>
               <Route path="/SavedPage/:id?" element={<SavedPage/>}/>
               <Route path="/Settings/:id?" element={<Settings/>}/>
+              <Route path="/verify-email" element={<EmailVerification />} />
+              <Route path="/email-confirmation" element={<EmailVerification />} />
               <Route path="/LandlordDash/:id?" element={<LandlordDashboard/>}/>
             </Routes>
             <Footer/>

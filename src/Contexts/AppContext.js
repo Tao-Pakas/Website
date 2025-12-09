@@ -29,7 +29,7 @@ export const useApp = () => {
   return context;
 };
 
-// 🔥 ADDED: Define UPDATE_INQUIRY_STATUS locally since it's not in the import
+// 🔥Define UPDATE_INQUIRY_STATUS locally
 const UPDATE_INQUIRY_STATUS = gql`
   mutation UpdateInquiry($id: ID!, $data: InquiryInput!) {
     updateInquiry(documentId: $id, data: $data) {
@@ -184,7 +184,7 @@ const useInquiries = (user, landlordDocumentId, studentDocumentId) => {
     fetchPolicy: 'cache-and-network'
   });
 
-  // 🔥 ADD: Debug when landlordPropertiesWithInquiries changes
+  // 🔥Debug when landlordPropertiesWithInquiries changes
   useEffect(() => {
     console.log('🔄 landlordPropertiesWithInquiries state changed:', landlordPropertiesWithInquiries);
     console.log('🔄 Length:', landlordPropertiesWithInquiries.length);
@@ -195,7 +195,7 @@ const useInquiries = (user, landlordDocumentId, studentDocumentId) => {
     return () => abortControllerRef.current?.abort();
   }, []);
 
-  // 🔥 FIXED: Fetch data only when document IDs are available
+  // 🔥Fetch data only when document IDs are available
   useEffect(() => {
     if (!user?.id) {
       setUserInquiries([]);
@@ -235,7 +235,7 @@ const useInquiries = (user, landlordDocumentId, studentDocumentId) => {
     }
   }, [user?.id, userRole, studentDocumentId, landlordDocumentId, fetchStudentInquiries, fetchLandlordProperties]);
 
-  // 🔥 FIXED: MAIN TRANSFORMATION PIPELINE
+  // 🔥 MAIN TRANSFORMATION PIPELINE
   useEffect(() => {
     if (!user?.id) {
       setUserInquiries([]);
@@ -249,7 +249,7 @@ const useInquiries = (user, landlordDocumentId, studentDocumentId) => {
     console.log('Landlord properties data available:', !!landlordPropertiesData);
     console.log('Landlord properties data structure:', landlordPropertiesData);
 
-    /** 👇 For LANDLORD — FIXED to handle both accommodation and accommodations */
+    /** 👇 For LANDLORD — handle both accommodation and accommodations */
     if (userRole === "landlord" && landlordPropertiesData) {
       let accommodations = [];
       
@@ -395,11 +395,11 @@ const useInquiries = (user, landlordDocumentId, studentDocumentId) => {
     landlordPropertiesWithInquiries,
 
     /** Aliases (keep backwards compatibility) */
-    landlordInquiries: userInquiries, // 🔥 FIXED: This should point to extracted inquiries
+    landlordInquiries: userInquiries,
     propertyInquiries: landlordPropertiesWithInquiries,
 
     /** Methods */
-    createInquiry, // 🔥 ADDED: Missing function
+    createInquiry,
     updateInquiry,
     refreshInquiries,
 
@@ -482,7 +482,7 @@ export const AppProvider = ({ children }) => {
   const [studentDocumentId, setStudentDocumentId] = useState(null);
   const [studentData, setStudentData] = useState(null);
 
-  // 🔥 FIXED: Memoize loadUserProfile to prevent unnecessary re-renders
+  // Memoize loadUserProfile to prevent unnecessary re-renders
   const loadUserProfile = useCallback(async (currentUser) => {
     if (!currentUser?.id) {
       setLandlordDocumentId(null);
@@ -585,12 +585,12 @@ export const AppProvider = ({ children }) => {
     }
   }, []);
 
-  // 🔥 UPDATED: Inquiries hook with documentId
+  // Inquiries hook with documentId
   const inquiries = useInquiries(user, landlordDocumentId, studentDocumentId);
 
   const likeSystem = useLikeSystem(user);
 
-  // 🔥 FIXED: Memoize loadUserAccommodations
+  // Memoize loadUserAccommodations
   const loadUserAccommodations = useCallback(async (currentUser) => {
     if (!currentUser?.id) {
       console.log('🔄 No user, clearing accommodations');
@@ -730,8 +730,8 @@ export const AppProvider = ({ children }) => {
 
   const value = useMemo(() => {
     console.log('🎯 DEBUG - AppContext value being created:');
-    console.log('  - landlordInquiries:', inquiries.userInquiries); // 🔥 FIXED: Changed to userInquiries
-    console.log('  - landlordInquiries length:', inquiries.userInquiries?.length); // 🔥 FIXED: Changed to userInquiries
+    console.log('  - landlordInquiries:', inquiries.userInquiries);
+    console.log('  - landlordInquiries length:', inquiries.userInquiries?.length);
     
     return {
       user,
@@ -759,10 +759,9 @@ export const AppProvider = ({ children }) => {
       deleteAccommodation: async (id) => accommodationService.deleteAccommodation(id, user),
       refreshAccommodations: async () => loadUserAccommodations(user),
 
-      // 🔥 UPDATED: Inquiries with documentId and property-based approach
       userInquiries: inquiries.userInquiries,
       landlordPropertiesWithInquiries: inquiries.landlordPropertiesWithInquiries,
-      landlordInquiries: inquiries.userInquiries, // 🔥 FIXED: This should point to extracted inquiries
+      landlordInquiries: inquiries.userInquiries,
       propertyInquiries: inquiries.landlordPropertiesWithInquiries,
       createInquiry: inquiries.createInquiry,
       updateInquiry: inquiries.updateInquiry,

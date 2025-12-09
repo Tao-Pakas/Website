@@ -11,7 +11,8 @@ const HouseForm = () => {
       CoverImage: null,
       Gallery: [],
       Rooms: [],
-      ShowCase: []
+      ShowCase: [],
+      Vedio: null 
     },
     
     // Location
@@ -125,23 +126,6 @@ const HouseForm = () => {
     setLoading(true);
     
     try {
-      // Prepare the data for GraphQL mutation
-      const submissionData = {
-        name: formData.name,
-        media: formData.media,
-        location: formData.location,
-        details: {
-          ...formData.details,
-          Bedrooms: parseInt(formData.details.Bedrooms),
-          Bathrooms: parseInt(formData.details.Bathrooms),
-          price: parseFloat(formData.details.price),
-          distance: formData.details.distance ? parseFloat(formData.details.distance) : null
-        }
-      };
-
-      // Here you would make your GraphQL mutation call
-      console.log('Submitting data:', submissionData);
-      
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       
@@ -159,7 +143,6 @@ const HouseForm = () => {
       });
       
     } catch (error) {
-      console.error('Error submitting form:', error);
       setErrors({ submit: 'Failed to submit form. Please try again.' });
     } finally {
       setLoading(false);
@@ -583,7 +566,7 @@ const HouseForm = () => {
               
               <div className={styles.formGroup}>
                 <label className={styles.label}>
-                  Distance from Campus (miles)
+                  Distance from Campus Km
                 </label>
                 <input
                   type="number"
@@ -592,7 +575,7 @@ const HouseForm = () => {
                   className={styles.input}
                   value={formData.details.distance}
                   onChange={(e) => handleInputChange('details', 'distance', e.target.value)}
-                  placeholder="Distance in miles"
+                  placeholder="Distance in Km"
                 />
               </div>
             </div>

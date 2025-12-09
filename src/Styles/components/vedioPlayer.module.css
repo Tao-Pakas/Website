@@ -1,0 +1,420 @@
+/* Styles/components/vedioPlayer.module.css */
+
+/* Main Container */
+.videoContainer {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1a1a1a;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Header */
+.videoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #2a2a2a;
+  border-bottom: 1px solid #333;
+}
+
+.videoTitle {
+  margin: 0;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.toggleControlsBtn {
+  background: #444;
+  border: 1px solid #555;
+  color: #ddd;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggleControlsBtn:hover {
+  background: #555;
+  color: #fff;
+}
+
+/* Error Message */
+.errorMessage {
+  background: #ffebee;
+  color: #c62828;
+  padding: 12px 20px;
+  text-align: center;
+  border-bottom: 1px solid #ffcdd2;
+}
+
+.errorMessage p {
+  margin: 0 0 10px 0;
+}
+
+.retryButton {
+  background: #c62828;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.retryButton:hover {
+  background: #b71c1c;
+}
+
+/* Video Wrapper */
+.videoWrapper {
+  position: relative;
+  width: 100%;
+  background: #000;
+}
+
+.videoElement {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 450px;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+/* Loading Indicator */
+.loadingIndicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/* Play Overlay Button */
+.playOverlayBtn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70px;
+  height: 70px;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  opacity: 0.8;
+}
+
+.playOverlayBtn:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: translate(-50%, -50%) scale(1.1);
+  opacity: 1;
+}
+
+/* Custom Controls */
+.customControls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: rgba(0, 0, 0, 0.9);
+  border-top: 1px solid #333;
+  flex-wrap: wrap;
+}
+
+.controlBtn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+  min-width: 40px;
+}
+
+.controlBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Time Section */
+.timeSection {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 200px;
+}
+
+.timeText {
+  color: #fff;
+  font-size: 0.85rem;
+  min-width: 40px;
+  text-align: center;
+}
+
+.seekSlider {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  background: #555;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+.seekSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4a6cf7;
+  cursor: pointer;
+}
+
+.seekSlider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4a6cf7;
+  cursor: pointer;
+  border: none;
+}
+
+/* Volume Section */
+.volumeSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.volumeIcon {
+  color: white;
+  font-size: 18px;
+}
+
+.volumeSlider {
+  width: 80px;
+  height: 6px;
+  -webkit-appearance: none;
+  background: #555;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+.volumeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #4a6cf7;
+  cursor: pointer;
+}
+
+.volumeSlider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #4a6cf7;
+  cursor: pointer;
+  border: none;
+}
+
+.volumeText {
+  color: #aaa;
+  font-size: 0.85rem;
+  min-width: 40px;
+}
+
+/* Speed Section */
+.speedSection {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.speedBtn {
+  background: #333;
+  border: none;
+  color: #aaa;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.speedBtn:hover {
+  background: #444;
+  color: #fff;
+}
+
+.activeSpeed {
+  background: #4a6cf7;
+  color: white;
+}
+
+/* Video Stats */
+.videoStats {
+  padding: 12px 20px;
+  background: #2a2a2a;
+  border-top: 1px solid #333;
+}
+
+.statsGrid {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statLabel {
+  color: #aaa;
+  font-size: 0.8rem;
+}
+
+.statValue {
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* No Video Placeholder */
+.noVideoContainer {
+  width: 100%;
+}
+
+.videoPlaceholder {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.placeholderIcon {
+  font-size: 64px;
+  color: #555;
+}
+
+.placeholderText {
+  color: #aaa;
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.placeholderSubtext {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+  text-align: center;
+  max-width: 300px;
+  line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .videoContainer {
+    border-radius: 8px;
+  }
+  
+  .videoHeader {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px 16px;
+  }
+  
+  .customControls {
+    padding: 10px 16px;
+    gap: 12px;
+  }
+  
+  .timeSection {
+    order: 1;
+    width: 100%;
+    min-width: unset;
+  }
+  
+  .volumeSection {
+    order: 2;
+    flex: 1;
+    min-width: unset;
+  }
+  
+  .speedSection {
+    order: 3;
+    flex: 1;
+    justify-content: flex-end;
+  }
+  
+  .statsGrid {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .playOverlayBtn {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+  
+  .videoElement {
+    max-height: 350px;
+  }
+}
+
+@media (max-width: 480px) {
+  .videoHeader {
+    padding: 10px 12px;
+  }
+  
+  .videoTitle {
+    font-size: 1rem;
+  }
+  
+  .toggleControlsBtn {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+  }
+  
+  .speedBtn {
+    padding: 4px 6px;
+    font-size: 0.75rem;
+  }
+  
+  .videoElement {
+    max-height: 250px;
+  }
+}

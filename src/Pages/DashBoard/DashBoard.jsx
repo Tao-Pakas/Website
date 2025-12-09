@@ -5,50 +5,60 @@ import {
   FaHeart, FaShoppingCart, FaEye, FaUser,
   FaChartLine, FaSearch, FaBed, FaBath,
   FaMapMarkerAlt, FaEnvelope, FaCheckCircle, 
-  FaBell, FaThumbsUp, FaPhone
+  FaBell, FaThumbsUp, FaPhone,
+  FaCartPlus
 } from 'react-icons/fa';
 import { useApp } from '../../Contexts/AppContext';
 import { useAuth } from '../../Contexts/AuthContext';
 
+/**
+ * Student Dashboard Component
+ * Main dashboard for students to manage their property searches, shortlists, and inquiries
+ */
 export default function Dashboard() {
-  const { user, favorites, shortlist, userInquiries, refreshInquiries, getLikedProperties } = useApp();
+  // Context hooks for user data and application state
+  const { user, shortlist, userInquiries, refreshInquiries, getLikedProperties } = useApp();
   const { getUserRole } = useAuth();
   
   // State management
-  const [activeTab, setActiveTab] = useState('overview');
-  const [recentActivity, setRecentActivity] = useState([]);
+  const [activeTab, setActiveTab] = useState('overview'); // Currently active tab
+  const [recentActivity, setRecentActivity] = useState([]); // Recent user activities
   const [userStats, setUserStats] = useState({
-    totalFavorites: 0,
-    totalShortlists: 0,
-    propertiesViewed: 0,
-    totalLikes: 0
+    totalShortlists: 0,     // Number of properties in shortlist
+    propertiesViewed: 0,    // Estimated properties viewed
+    totalLikes: 0          // Number of properties liked
   });
 
   /**
-   * Redirect landlords to landlord dashboard
+   * Redirect landlords to landlord dashboard and refresh inquiries
+   * Runs when user changes or on component mount
    */
   useEffect(() => {
     if (user) {
       const userRole = getUserRole();
+      // Redirect landlords to their specialized dashboard
       if (userRole === 'landlord' || user.landlord) {
         window.location.href = '/LandlordDash';
         return;
       }
+      // Refresh inquiries data for students
       refreshInquiries?.();
     }
   }, [user, getUserRole, refreshInquiries]);
 
   /**
-   * Calculate new inquiries count for notification badge
+   * Calculate number of new/unread inquiries for notification badge
    */
   const newInquiriesCount = userInquiries?.filter(inquiry => 
     inquiry.state === 'unread'
   ).length || 0;
 
   /**
-   * Helper function to get property display data
+   * Helper function to normalize property data for consistent display
+   * Handles different property data structures from various sources
    */
   const getPropertyData = (property) => {
+    // Handle properties with details/location structure
     if (property.details || property.location) {
       return {
         id: property.id,
@@ -67,6 +77,7 @@ export default function Dashboard() {
       };
     }
     
+    // Handle basic property structure
     return {
       id: property.id || 'no-id',
       title: property.title || property.name || 'Untitled Property',
@@ -84,6 +95,7 @@ export default function Dashboard() {
 
   /**
    * Status badge component for inquiries
+   * Returns styled badge based on inquiry state
    */
   const getStatusBadge = (state) => {
     const statusConfig = {
@@ -104,23 +116,12 @@ export default function Dashboard() {
 
   /**
    * Generate recent activity from user actions
+   * Creates activity items from shortlists and likes
    */
   useEffect(() => {
     const activities = [];
     
-    if (favorites && favorites.length > 0) {
-      const recentFav = favorites[0];
-      const propertyData = getPropertyData(recentFav);
-      activities.push({
-        id: `fav-${recentFav.id}`,
-        type: 'favorite',
-        property: propertyData.title,
-        time: 'Recently',
-        icon: <FaHeart />,
-        color: '#e74c3c'
-      });
-    }
-    
+    // Add recent shortlist activity
     if (shortlist && shortlist.length > 0) {
       const recentShortlist = shortlist[0];
       const propertyData = getPropertyData(recentShortlist);
@@ -134,6 +135,7 @@ export default function Dashboard() {
       });
     }
     
+    // Add recent like activity
     const likedProperties = getLikedProperties();
     if (likedProperties && likedProperties.length > 0) {
       const recentLike = likedProperties[0];
@@ -147,7 +149,7 @@ export default function Dashboard() {
       });
     }
     
-    // Add helpful tips if no activity
+    // Add helpful tips if no activity exists
     if (activities.length === 0) {
       activities.push(
         {
@@ -168,34 +170,39 @@ export default function Dashboard() {
         },
         {
           id: 'help-3',
-          type: 'favorite',
-          property: 'Save properties you like',
+          type: 'shortlist',
+          property: 'Shortlist properties you like',
           time: 'Then',
-          icon: <FaHeart />,
+          icon: <FaCartPlus />,
           color: '#e74c3c'
         }
       );
     }
     
+    // Set recent activities (limit to 4)
     setRecentActivity(activities.slice(0, 4));
-  }, [favorites, shortlist, getLikedProperties]);
+  }, [shortlist, getLikedProperties]); // Removed favorites from dependencies
 
   /**
-   * Calculate student-specific stats
+   * Calculate student-specific statistics
+   * Updates user stats when shortlist or liked properties change
    */
   useEffect(() => {
     const likedProperties = getLikedProperties();
     const calculatedStats = {
-      totalFavorites: favorites?.length || 0,
       totalShortlists: shortlist?.length || 0,
-      propertiesViewed: Math.max((favorites?.length || 0) * 3, (likedProperties?.length || 0) * 2),
+      // Estimate properties viewed based on likes and shortlists
+      propertiesViewed: Math.max((shortlist?.length || 0) * 3, (likedProperties?.length || 0) * 2),
       totalLikes: likedProperties?.length || 0
     };
     
     setUserStats(calculatedStats);
-  }, [favorites, shortlist, getLikedProperties]);
+  }, [shortlist, getLikedProperties]);
 
-  // Student-focused quick stats
+  /**
+   * Quick stats configuration for dashboard overview
+   * Each stat includes icon, color, and display information
+   */
   const quickStats = [
     {
       title: 'Properties Viewed',
@@ -216,15 +223,6 @@ export default function Dashboard() {
       description: 'Properties you liked'
     },
     {
-      title: 'Favorites',
-      value: userStats.totalFavorites,
-      change: favorites?.length > 0 ? '+3%' : '+0%',
-      trend: favorites?.length > 0 ? 'up' : 'neutral',
-      icon: <FaHeart />,
-      color: '#e74c3c',
-      description: 'Saved properties'
-    },
-    {
       title: 'Shortlisted',
       value: userStats.totalShortlists,
       change: shortlist?.length > 0 ? '+2%' : '+0%',
@@ -235,12 +233,12 @@ export default function Dashboard() {
     }
   ];
 
+  // Get user role for conditional rendering
   const userRole = getUserRole();
-  const isStudent = userRole === 'student' || user?.student;
 
   return (
     <div className={style.Dashboard}>
-      {/* Header Section */}
+      {/* Dashboard Header Section */}
       <div className={style.dashboardHeader}>
         <div className={style.headerContent}>
           <h1>Welcome back, {user?.username || 'Student'}! 🎓</h1>
@@ -257,7 +255,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Tab Navigation */}
+      {/* Tab Navigation Bar */}
       <div className={style.tabNavigation}>
         <button 
           className={`${style.tab} ${activeTab === 'overview' ? style.activeTab : ''}`}
@@ -265,13 +263,6 @@ export default function Dashboard() {
         >
           <FaChartLine />
           Overview
-        </button>
-        <button 
-          className={`${style.tab} ${activeTab === 'saved' ? style.activeTab : ''}`}
-          onClick={() => setActiveTab('saved')}
-        >
-          <FaHeart />
-          Saved Properties
         </button>
         <button 
           className={`${style.tab} ${activeTab === 'shortlist' ? style.activeTab : ''}`}
@@ -292,12 +283,12 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Dashboard Content Area */}
       <div className={style.dashboardContent}>
-        {/* Overview Tab */}
+        {/* Overview Tab - Dashboard Home */}
         {activeTab === 'overview' && (
           <div className={style.overviewGrid}>
-            {/* Quick Stats Cards */}
+            {/* Quick Stats Cards Section */}
             <div className={style.statsGrid}>
               {quickStats.map((stat, index) => (
                 <div key={`stat-${index}`} className={style.statCard}>
@@ -316,7 +307,7 @@ export default function Dashboard() {
               ))}
             </div>
 
-            {/* Recent Activity Section */}
+            {/* Recent Activity Timeline */}
             <div className={style.activityCard}>
               <h2>Recent Activity</h2>
               <div className={style.activityList}>
@@ -339,7 +330,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Quick Actions Grid */}
+            {/* Quick Actions Grid - Main navigation shortcuts */}
             <div className={style.quickActions}>
               <h2>Find Your Perfect Home</h2>
               <div className={style.actionGrid}>
@@ -348,17 +339,12 @@ export default function Dashboard() {
                   <span>Browse All Properties</span>
                   <small>Explore available accommodations</small>
                 </Link>
-                <Link to="/saved?tab=favorites" className={style.actionCard}>
-                  <FaHeart />
-                  <span>View Favorites</span>
-                  <small>Your saved properties</small>
-                </Link>
-                <Link to="/saved?tab=shortlist" className={style.actionCard}>
+                <Link to="/SavedPage" className={style.actionCard}>
                   <FaShoppingCart />
                   <span>Check Shortlist</span>
                   <small>Compare top choices</small>
                 </Link>
-                <Link to="/profile" className={style.actionCard}>
+                <Link to="/Settings" className={style.actionCard}>
                   <FaUser />
                   <span>Update Profile</span>
                   <small>Manage your preferences</small>
@@ -366,7 +352,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Search Tips Section */}
+            {/* Search Tips Section - Helpful guidance for students */}
             <div className={style.tipsSection}>
               <h2>💡 Finding Student Accommodation</h2>
               <div className={style.tipsGrid}>
@@ -387,99 +373,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Saved Properties Tab */}
-        {activeTab === 'saved' && (
-          <div className={style.savedTab}>
-            <div className={style.tabHeader}>
-              <h2>Your Saved Properties</h2>
-              <div className={style.savedStats}>
-                <span>{userStats.totalLikes} Likes</span>
-                <span>{userStats.totalFavorites} Favorites</span>
-                <span>{userStats.totalShortlists} Shortlisted</span>
-              </div>
-            </div>
-
-            <div className={style.savedGrid}>
-              <div className={style.savedSection}>
-                <h3>
-                  <FaHeart />
-                  Favorite Properties ({userStats.totalFavorites})
-                </h3>
-                <div className={style.propertiesGrid}>
-                  {favorites?.slice(0, 6).map(item => {
-                    const property = getPropertyData(item);
-                    return (
-                      <div key={`fav-${property.id}`} className={style.propertyCard}>
-                        <div className={style.propertyImage}>
-                          <img 
-                            src={property.image} 
-                            alt={property.title}
-                            onError={(e) => {
-                              e.target.src = '/default-property.jpg';
-                            }}
-                          />
-                          <div className={style.favoriteBadge}>
-                            <FaHeart />
-                          </div>
-                          {property.likes > 0 && (
-                            <div className={style.likesBadge}>
-                              <FaThumbsUp />
-                              <span>{property.likes}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className={style.propertyInfo}>
-                          <h4>{property.title}</h4>
-                          <p className={style.propertyLocation}>
-                            <FaMapMarkerAlt /> {property.location}
-                          </p>
-                          <div className={style.propertyPrice}>${property.price}/month</div>
-                          <div className={style.propertyFeatures}>
-                            <span><FaBed /> {property.bedrooms} beds</span>
-                            <span><FaBath /> {property.bathrooms} baths</span>
-                            {property.distance && <span>📍 {property.distance}km</span>}
-                          </div>
-                          <div className={style.propertyMeta}>
-                            <span className={property.isAvailable ? style.available : style.notAvailable}>
-                              {property.isAvailable ? 'Available' : 'Not Available'}
-                            </span>
-                            <span className={style.propertyType}>{property.type}</span>
-                          </div>
-                          <div className={style.propertyActions}>
-                            <Link 
-                              to={`/property/${property.id}`}
-                              className={style.viewDetailsBtn}
-                            >
-                              View Details
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                {userStats.totalFavorites === 0 && (
-                  <div className={style.emptyState}>
-                    <FaHeart />
-                    <h3>No favorite properties yet</h3>
-                    <p>Start browsing and save properties you like to your favorites!</p>
-                    <Link to="/listings" className={style.browseButton}>
-                      <FaSearch />
-                      Browse Properties
-                    </Link>
-                  </div>
-                )}
-                {userStats.totalFavorites > 6 && (
-                  <Link to="/saved?tab=favorites" className={style.viewAllLink}>
-                    View All Favorites →
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Shortlist Tab */}
+        {/* Shortlist Tab - View and manage shortlisted properties */}
         {activeTab === 'shortlist' && (
           <div className={style.shortlistTab}>
             <div className={style.tabHeader}>
@@ -488,6 +382,7 @@ export default function Dashboard() {
             </div>
 
             <div className={style.shortlistGrid}>
+              {/* Display all shortlisted properties */}
               {shortlist?.map(item => {
                 const property = getPropertyData(item);
                 return (
@@ -523,7 +418,7 @@ export default function Dashboard() {
                       </div>
                       <div className={style.propertyActions}>
                         <Link 
-                          to={`/property/${property.id}`}
+                          to={`/Single/${property.id}`}
                           className={style.viewDetailsBtn}
                         >
                           View Details
@@ -534,6 +429,7 @@ export default function Dashboard() {
                 );
               })}
               
+              {/* Empty state for shortlist */}
               {(!shortlist || shortlist.length === 0) && (
                 <div className={style.emptyState}>
                   <FaShoppingCart />
@@ -544,16 +440,16 @@ export default function Dashboard() {
                       <FaSearch />
                       Browse Properties
                     </Link>
-                    <Link to="/saved" className={style.secondaryButton}>
+                    <Link to="/SavedPage" className={style.secondaryButton}>
                       <FaHeart />
-                      View Favorites
+                      View Saved Properties
                     </Link>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Comparison Section for Multiple Shortlisted Properties */}
+            {/* Comparison Table - Shows side-by-side comparison when multiple properties are shortlisted */}
             {shortlist && shortlist.length > 1 && (
               <div className={style.comparisonSection}>
                 <h3>Quick Comparison</h3>
@@ -587,207 +483,206 @@ export default function Dashboard() {
           </div>
         )}
 
-                {/* Inquiries Tab - Shows only this student's inquiries */}
-        // In DashBoard.jsx - REPLACE the entire inquiries tab section
-{activeTab === 'inquiries' && (
-  <div className={style.inquiriesTab}>
-    <div className={style.tabHeader}>
-      <h2>My Property Inquiries</h2>
-      <p>Track your booking requests and communication with landlords</p>
-      <div className={style.inquiryStats}>
-        <span className={style.pendingInquiries}>
-          {userInquiries?.filter(i => i.state === 'unread' || i.state === 'in-progress').length || 0} Active
-        </span>
-        <span>{userInquiries?.length || 0} Total</span>
-      </div>
-    </div>
-
-    <div className={style.inquiriesList}>
-      {/* 🔥 FIXED: Proper inquiry mapping with new structure */}
-      {userInquiries?.map(inquiry => {
-        // Handle both new structure with accommodation and old structure
-        const inquiryData = {
-          id: inquiry.documentId || inquiry.id,
-          documentId: inquiry.documentId || inquiry.id,
-          
-          // Accommodation data from new structure
-          accommodation: inquiry.accommodation || {
-            id: inquiry.propertyId,
-            name: inquiry.propertyName,
-            location: inquiry.location || {},
-            details: inquiry.details || {},
-            media: inquiry.media || {},
-            landlord: inquiry.landlord || {}
-          },
-          
-          // Inquiry attributes
-          propertyName: inquiry.accommodation?.name || inquiry.propertyName || 'Unknown Property',
-          propertyId: inquiry.accommodation?.id || inquiry.propertyId,
-          userName: inquiry.userName || inquiry.attributes?.userName,
-          userEmail: inquiry.userEmail || inquiry.attributes?.userEmail,
-          userPhone: inquiry.userPhone || inquiry.attributes?.userPhone,
-          message: inquiry.message || inquiry.attributes?.message,
-          preferredDate: inquiry.preferredDate || inquiry.attributes?.preferredDate,
-          state: inquiry.state || inquiry.attributes?.state || 'unread',
-          landlordReply: inquiry.landlordReply || inquiry.attributes?.landlordReply,
-          counterDate: inquiry.counterDate || inquiry.attributes?.counterDate,
-          userId: inquiry.userId || inquiry.attributes?.userId,
-          
-          // Student data
-          student: inquiry.student || {}
-        };
-
-        const currentState = inquiryData.state;
-        const accommodation = inquiryData.accommodation;
-        
-        return (
-          <div key={`inquiry-${inquiryData.id}`} className={`${style.inquiryCard} ${style[inquiryData.state || 'unread']}`}>
-            <div className={style.inquiryHeader}>
-              <div className={style.propertyTitle}>
-                <h3>{inquiryData.propertyName}</h3>
-                {accommodation?.landlord?.fullName && (
-                  <span className={style.landlordName}>with {accommodation.landlord.fullName}</span>
-                )}
+        {/* Inquiries Tab - Track communication with landlords */}
+        {activeTab === 'inquiries' && (
+          <div className={style.inquiriesTab}>
+            <div className={style.tabHeader}>
+              <h2>My Property Inquiries</h2>
+              <p>Track your booking requests and communication with landlords</p>
+              <div className={style.inquiryStats}>
+                <span className={style.pendingInquiries}>
+                  {userInquiries?.filter(i => i.state === 'unread' || i.state === 'in-progress').length || 0} Active
+                </span>
+                <span>{userInquiries?.length || 0} Total</span>
               </div>
-              {getStatusBadge(inquiryData.state)}
             </div>
-            
-            {/* Property Information */}
-            {accommodation && (
-              <div className={style.propertyInfo}>
-                <div className={style.propertyDetails}>
-                  {accommodation.location?.Address && (
-                    <p className={style.propertyAddress}>
-                      <FaMapMarkerAlt /> {accommodation.location.Address}
-                    </p>
-                  )}
-                  {accommodation.details?.price && (
-                    <p className={style.propertyPrice}>${accommodation.details.price}/month</p>
-                  )}
-                </div>
-              </div>
-            )}
 
-            <div className={style.inquiryDetails}>
-              {/* Inquiry Meta */}
-              <div className={style.inquiryMeta}>
-                <span><strong>Preferred Date:</strong> {inquiryData.preferredDate ? new Date(inquiryData.preferredDate).toLocaleDateString() : 'Not specified'}</span>
-                <span><strong>Sent:</strong> {inquiry.createdAt ? new Date(inquiry.createdAt).toLocaleDateString() : 'Recently'}</span>
-              </div>
-              
-              {/* Your Message */}
-              <div className={style.inquiryMessage}>
-                <h4>Your Message:</h4>
-                <p>{inquiryData.message || 'No message provided'}</p>
-              </div>
+            <div className={style.inquiriesList}>
+              {/* Display all inquiries with proper data structure handling */}
+              {userInquiries?.map(inquiry => {
+                // Normalize inquiry data from different structures
+                const inquiryData = {
+                  id: inquiry.documentId || inquiry.id,
+                  documentId: inquiry.documentId || inquiry.id,
+                  
+                  // Accommodation data with fallbacks
+                  accommodation: inquiry.accommodation || {
+                    id: inquiry.propertyId,
+                    name: inquiry.propertyName,
+                    location: inquiry.location || {},
+                    details: inquiry.details || {},
+                    media: inquiry.media || {},
+                    landlord: inquiry.landlord || {}
+                  },
+                  
+                  // Inquiry attributes with fallbacks for compatibility
+                  propertyName: inquiry.accommodation?.name || inquiry.propertyName || 'Unknown Property',
+                  propertyId: inquiry.accommodation?.id || inquiry.propertyId,
+                  userName: inquiry.userName || inquiry.attributes?.userName,
+                  userEmail: inquiry.userEmail || inquiry.attributes?.userEmail,
+                  userPhone: inquiry.userPhone || inquiry.attributes?.userPhone,
+                  message: inquiry.message || inquiry.attributes?.message,
+                  preferredDate: inquiry.preferredDate || inquiry.attributes?.preferredDate,
+                  state: inquiry.state || inquiry.attributes?.state || 'unread',
+                  landlordReply: inquiry.landlordReply || inquiry.attributes?.landlordReply,
+                  counterDate: inquiry.counterDate || inquiry.attributes?.counterDate,
+                  userId: inquiry.userId || inquiry.attributes?.userId,
+                  
+                  // Student data
+                  student: inquiry.student || {}
+                };
 
-              {/* Landlord Response */}
-              {inquiryData.landlordReply && (
-                <div className={style.landlordReply}>
-                  <h4>🏠 Landlord's Response:</h4>
-                  <div className={style.replyContent}>
-                    <p>{inquiryData.landlordReply}</p>
-                    {inquiryData.counterDate && (
-                      <p className={style.suggestedDate}>
-                        <strong>📅 Suggested Date:</strong> {new Date(inquiryData.counterDate).toLocaleDateString()}
-                      </p>
+                const currentState = inquiryData.state;
+                const accommodation = inquiryData.accommodation;
+                
+                return (
+                  <div key={`inquiry-${inquiryData.id}`} className={`${style.inquiryCard} ${style[inquiryData.state || 'unread']}`}>
+                    <div className={style.inquiryHeader}>
+                      <div className={style.propertyTitle}>
+                        <h3>{inquiryData.propertyName}</h3>
+                        {accommodation?.landlord?.fullName && (
+                          <span className={style.landlordName}>with {accommodation.landlord.fullName}</span>
+                        )}
+                      </div>
+                      {getStatusBadge(inquiryData.state)}
+                    </div>
+                    
+                    {/* Property Information Section */}
+                    {accommodation && (
+                      <div className={style.propertyInfo}>
+                        <div className={style.propertyDetails}>
+                          {accommodation.location?.Address && (
+                            <p className={style.propertyAddress}>
+                              <FaMapMarkerAlt /> {accommodation.location.Address}
+                            </p>
+                          )}
+                          {accommodation.details?.price && (
+                            <p className={style.propertyPrice}>${accommodation.details.price}/month</p>
+                          )}
+                        </div>
+                      </div>
                     )}
+
+                    <div className={style.inquiryDetails}>
+                      {/* Inquiry Metadata */}
+                      <div className={style.inquiryMeta}>
+                        <span><strong>Preferred Date:</strong> {inquiryData.preferredDate ? new Date(inquiryData.preferredDate).toLocaleDateString() : 'Not specified'}</span>
+                        <span><strong>Sent:</strong> {inquiry.createdAt ? new Date(inquiry.createdAt).toLocaleDateString() : 'Recently'}</span>
+                      </div>
+                      
+                      {/* Student's Original Message */}
+                      <div className={style.inquiryMessage}>
+                        <h4>Your Message:</h4>
+                        <p>{inquiryData.message || 'No message provided'}</p>
+                      </div>
+
+                      {/* Landlord's Response Section */}
+                      {inquiryData.landlordReply && (
+                        <div className={style.landlordReply}>
+                          <h4>🏠 Landlord's Response:</h4>
+                          <div className={style.replyContent}>
+                            <p>{inquiryData.landlordReply}</p>
+                            {inquiryData.counterDate && (
+                              <p className={style.suggestedDate}>
+                                <strong>📅 Suggested Date:</strong> {new Date(inquiryData.counterDate).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Inquiry Status and Action Buttons */}
+                      <div className={style.inquiryActions}>
+                        <div className={style.statusSection}>
+                          {currentState === 'unread' && (
+                            <div className={style.pendingStatus}>
+                              ⏳ Waiting for landlord response...
+                            </div>
+                          )}
+                          {currentState === 'in-progress' && (
+                            <div className={style.inProgressStatus}>
+                              🔄 Conversation in progress
+                            </div>
+                          )}
+                          {currentState === 'done' && (
+                            <div className={style.completedStatus}>
+                              ✅ Inquiry Completed
+                            </div>
+                          )}
+                        </div>
+
+                        <div className={style.actionButtons}>
+                          {inquiryData.propertyId && (
+                            <Link 
+                              to={`/Single/${inquiryData.propertyId}`}
+                              className={style.viewPropertyBtn}
+                            >
+                              <FaEye />
+                              View Property
+                            </Link>
+                          )}
+                          {accommodation?.landlord?.phoneNumber && (
+                            <a 
+                              href={`tel:${accommodation.landlord.phoneNumber}`}
+                              className={style.callLandlordBtn}
+                            >
+                              <FaPhone />
+                              Call Landlord
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Inquiry Timeline - Visual progress indicator */}
+                    <div className={style.inquiryTimeline}>
+                      <div className={style.timelineItem}>
+                        <div className={`${style.timelineDot} ${style.completed}`}></div>
+                        <span>Inquiry Sent</span>
+                        <small>{inquiry.createdAt ? new Date(inquiry.createdAt).toLocaleDateString() : 'Recently'}</small>
+                      </div>
+                      
+                      <div className={style.timelineItem}>
+                        <div className={`${style.timelineDot} ${inquiryData.landlordReply ? style.completed : style.pending}`}></div>
+                        <span>Landlord Response</span>
+                        <small>{inquiryData.landlordReply ? 'Received' : 'Waiting'}</small>
+                      </div>
+                      
+                      <div className={style.timelineItem}>
+                        <div className={`${style.timelineDot} ${currentState === 'done' ? style.completed : style.pending}`}></div>
+                        <span>Completed</span>
+                        <small>{currentState === 'done' ? 'Resolved' : 'In Progress'}</small>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {/* Empty State for Inquiries */}
+              {(!userInquiries || userInquiries.length === 0) && (
+                <div className={style.emptyState}>
+                  <FaEnvelope className={style.emptyIcon} />
+                  <h3>No inquiries yet</h3>
+                  <p>When you send booking requests to landlords, they will appear here with all the conversation history.</p>
+                  <div className={style.emptyActions}>
+                    <Link to="/listings" className={style.browseButton}>
+                      <FaSearch />
+                      Browse Properties
+                    </Link>
+                    <div className={style.tips}>
+                      <h4>💡 Tips for better responses:</h4>
+                      <ul>
+                        <li>Be specific about your preferred move-in date</li>
+                        <li>Mention your budget and requirements</li>
+                        <li>Ask about availability and viewing options</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               )}
-
-              {/* Inquiry Status & Actions */}
-              <div className={style.inquiryActions}>
-                <div className={style.statusSection}>
-                  {currentState === 'unread' && (
-                    <div className={style.pendingStatus}>
-                      ⏳ Waiting for landlord response...
-                    </div>
-                  )}
-                  {currentState === 'in-progress' && (
-                    <div className={style.inProgressStatus}>
-                      🔄 Conversation in progress
-                    </div>
-                  )}
-                  {currentState === 'done' && (
-                    <div className={style.completedStatus}>
-                      ✅ Inquiry Completed
-                    </div>
-                  )}
-                </div>
-
-                <div className={style.actionButtons}>
-                  {inquiryData.propertyId && (
-                    <Link 
-                      to={`/property/${inquiryData.propertyId}`}
-                      className={style.viewPropertyBtn}
-                    >
-                      <FaEye />
-                      View Property
-                    </Link>
-                  )}
-                  {accommodation?.landlord?.phoneNumber && (
-                    <a 
-                      href={`tel:${accommodation.landlord.phoneNumber}`}
-                      className={style.callLandlordBtn}
-                    >
-                      <FaPhone />
-                      Call Landlord
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Timeline */}
-            <div className={style.inquiryTimeline}>
-              <div className={style.timelineItem}>
-                <div className={`${style.timelineDot} ${style.completed}`}></div>
-                <span>Inquiry Sent</span>
-                <small>{inquiry.createdAt ? new Date(inquiry.createdAt).toLocaleDateString() : 'Recently'}</small>
-              </div>
-              
-              <div className={style.timelineItem}>
-                <div className={`${style.timelineDot} ${inquiryData.landlordReply ? style.completed : style.pending}`}></div>
-                <span>Landlord Response</span>
-                <small>{inquiryData.landlordReply ? 'Received' : 'Waiting'}</small>
-              </div>
-              
-              <div className={style.timelineItem}>
-                <div className={`${style.timelineDot} ${currentState === 'done' ? style.completed : style.pending}`}></div>
-                <span>Completed</span>
-                <small>{currentState === 'done' ? 'Resolved' : 'In Progress'}</small>
-              </div>
             </div>
           </div>
-        );
-      })}
-      
-      {/* Empty State */}
-      {(!userInquiries || userInquiries.length === 0) && (
-        <div className={style.emptyState}>
-          <FaEnvelope className={style.emptyIcon} />
-          <h3>No inquiries yet</h3>
-          <p>When you send booking requests to landlords, they will appear here with all the conversation history.</p>
-          <div className={style.emptyActions}>
-            <Link to="/listings" className={style.browseButton}>
-              <FaSearch />
-              Browse Properties
-            </Link>
-            <div className={style.tips}>
-              <h4>💡 Tips for better responses:</h4>
-              <ul>
-                <li>Be specific about your preferred move-in date</li>
-                <li>Mention your budget and requirements</li>
-                <li>Ask about availability and viewing options</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  </div>
-)}      
+        )}
       </div>
     </div>
   );
